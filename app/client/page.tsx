@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Package, Plus, Search, MapPin, Truck, CheckCircle2, Clock, Filter, AlertCircle } from 'lucide-react';
+import { Package, Plus, Search, MapPin, Truck, CheckCircle2, Clock } from 'lucide-react';
 
 export default function ClientDashboard() {
   const [activeTab, setActiveTab] = useState<'orders' | 'quote' | 'stores'>('orders');
@@ -11,129 +11,95 @@ export default function ClientDashboard() {
     { id: 'SHP-9021', destination: 'Akwa, Douala', carrier: 'Ola Trans Ltd', status: 'In Transit', fee: '2,500 XAF', cod: '25,000 XAF', date: 'Today, 14:20' },
     { id: 'SHP-9022', destination: 'Bonapriso, Douala', carrier: 'House Carrier', status: 'Picked Up', fee: '1,800 XAF', cod: '12,500 XAF', date: 'Today, 12:10' },
     { id: 'SHP-9018', destination: 'Deido, Douala', carrier: 'Express Logistics', status: 'Delivered', fee: '2,200 XAF', cod: '0 XAF', date: 'Yesterday' },
-    { id: 'SHP-9015', destination: 'Bali, Douala', carrier: 'Ola Trans Ltd', status: 'Delivered', fee: '3,000 XAF', cod: '45,000 XAF', date: '2 days ago' },
   ];
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900/80 p-6 rounded-xl border border-slate-800">
+      <div className="mambanda-card flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center space-x-2 text-amber-400 text-sm font-semibold mb-1">
-            <span>Client Dashboard</span>
-            <span>•</span>
-            <span>Vendor Shipping</span>
-          </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Delivery Requests & Quotes</h1>
-          <p className="text-slate-400 text-sm mt-1">
-            Create shipment orders, compare multi-carrier quotes (Ola Trans tariff rules), and track delivery codes.
-          </p>
+          <span className="mambanda-badge inline-block mb-2">Vendor Portal</span>
+          <h1 className="text-2xl font-extrabold text-[#f4f6ef]">Client Shipping & Quotes</h1>
+          <p className="text-[#8b90a3] text-xs mt-1">Manage delivery requests and multi-carrier tariff quotes.</p>
         </div>
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={() => setActiveTab('quote')}
-            className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold rounded-lg text-sm transition-colors flex items-center space-x-2 shadow-lg shadow-amber-500/20"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Get Quote & Book</span>
-          </button>
-        </div>
+        <button
+          onClick={() => setActiveTab('quote')}
+          className="mambanda-btn text-xs"
+        >
+          <Plus className="w-4 h-4" />
+          <span>New Quote</span>
+        </button>
       </div>
 
       {/* Tabs */}
-      <div className="flex space-x-2 border-b border-slate-800 pb-2">
+      <div className="flex space-x-2 border-b border-[#252839] pb-2">
         <button
           onClick={() => setActiveTab('orders')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            activeTab === 'orders' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'text-slate-400 hover:text-white'
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+            activeTab === 'orders' ? 'bg-[#c9ee0a] text-[#0a0b10]' : 'text-[#8b90a3] hover:text-[#f4f6ef]'
           }`}
         >
-          My Orders & Shipments ({orders.length})
+          Orders ({orders.length})
         </button>
         <button
           onClick={() => setActiveTab('quote')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            activeTab === 'quote' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'text-slate-400 hover:text-white'
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+            activeTab === 'quote' ? 'bg-[#c9ee0a] text-[#0a0b10]' : 'text-[#8b90a3] hover:text-[#f4f6ef]'
           }`}
         >
-          Multi-Carrier Quote Engine
+          Quote Engine
         </button>
         <button
           onClick={() => setActiveTab('stores')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            activeTab === 'stores' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'text-slate-400 hover:text-white'
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+            activeTab === 'stores' ? 'bg-[#c9ee0a] text-[#0a0b10]' : 'text-[#8b90a3] hover:text-[#f4f6ef]'
           }`}
         >
-          Store Pickup Settings
+          Store Settings
         </button>
       </div>
 
-      {/* Tab Content: Orders */}
       {activeTab === 'orders' && (
-        <div className="mambanda-card p-6 space-y-4">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="relative w-full sm:w-80">
-              <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
+        <div className="mambanda-card space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="relative w-72">
+              <Search className="absolute left-3 top-2.5 w-4 h-4 text-[#8b90a3]" />
               <input
                 type="text"
-                placeholder="Search by ID, destination..."
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-4 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
+                placeholder="Search shipments..."
+                className="w-full bg-[#07080f] border border-[#252839] rounded-xl pl-9 pr-4 py-2 text-xs text-[#f4f6ef] focus:outline-none focus:border-[#c9ee0a]"
               />
-            </div>
-            <div className="flex items-center space-x-2 w-full sm:w-auto">
-              <select className="bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-slate-300 focus:outline-none focus:border-amber-500">
-                <option>All Statuses</option>
-                <option>In Transit</option>
-                <option>Delivered</option>
-                <option>Pending Pickup</option>
-              </select>
             </div>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-slate-950/80 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-[#07080f] text-[#8b90a3] uppercase tracking-wider border-b border-[#252839]">
                 <tr>
-                  <th className="py-3 px-4">Tracking ID</th>
-                  <th className="py-3 px-4">Destination</th>
-                  <th className="py-3 px-4">Carrier</th>
-                  <th className="py-3 px-4">Delivery Fee</th>
-                  <th className="py-3 px-4">COD Amount</th>
-                  <th className="py-3 px-4">Date</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
+                  <th className="py-3 px-3">ID</th>
+                  <th className="py-3 px-3">Destination</th>
+                  <th className="py-3 px-3">Carrier</th>
+                  <th className="py-3 px-3">Fee</th>
+                  <th className="py-3 px-3">COD</th>
+                  <th className="py-3 px-3">Status</th>
+                  <th className="py-3 px-3 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800 text-slate-300">
-                {orders.map((order) => (
-                  <tr key={order.id} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="py-3.5 px-4 font-mono font-medium text-amber-400">{order.id}</td>
-                    <td className="py-3.5 px-4 font-medium text-white flex items-center space-x-1.5">
-                      <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                      <span>{order.destination}</span>
-                    </td>
-                    <td className="py-3.5 px-4 text-slate-300 flex items-center space-x-1.5">
-                      <Truck className="w-3.5 h-3.5 text-blue-400" />
-                      <span>{order.carrier}</span>
-                    </td>
-                    <td className="py-3.5 px-4 font-mono text-slate-200">{order.fee}</td>
-                    <td className="py-3.5 px-4 font-mono text-slate-200">{order.cod}</td>
-                    <td className="py-3.5 px-4 text-slate-400 text-xs">{order.date}</td>
-                    <td className="py-3.5 px-4">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        order.status === 'Delivered'
-                          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                          : order.status === 'In Transit'
-                          ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                          : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
-                      }`}>
-                        {order.status}
+              <tbody className="divide-y divide-[#252839] text-[#f4f6ef]">
+                {orders.map((o) => (
+                  <tr key={o.id} className="hover:bg-[#1a1d2b]/50 transition-colors">
+                    <td className="py-3 px-3 font-mono text-[#c9ee0a] font-bold">{o.id}</td>
+                    <td className="py-3 px-3 text-[#8b90a3]">{o.destination}</td>
+                    <td className="py-3 px-3">{o.carrier}</td>
+                    <td className="py-3 px-3 font-mono">{o.fee}</td>
+                    <td className="py-3 px-3 font-mono">{o.cod}</td>
+                    <td className="py-3 px-3">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#1a1d2b] border border-[#252839] text-[#c9ee0a]">
+                        {o.status}
                       </span>
                     </td>
-                    <td className="py-3.5 px-4 text-right">
-                      <button className="text-xs font-semibold text-amber-400 hover:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 px-2.5 py-1 rounded-md transition-colors">
-                        Track Live
-                      </button>
+                    <td className="py-3 px-3 text-right">
+                      <button className="text-[11px] font-bold text-[#c9ee0a] hover:underline">Track</button>
                     </td>
                   </tr>
                 ))}
@@ -143,168 +109,61 @@ export default function ClientDashboard() {
         </div>
       )}
 
-      {/* Tab Content: Quote Engine */}
       {activeTab === 'quote' && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="mambanda-card p-6 lg:col-span-1 space-y-4">
-            <h3 className="text-lg font-semibold text-white">Request Shipping Quote</h3>
-            <p className="text-xs text-slate-400">Select pickup and dropoff places in Douala/Yaoundé to compare active carrier tariffs.</p>
-
-            <div className="space-y-3">
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Pickup Location</label>
-                <select className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
-                  <option>Bonabéri Hub (Head Office)</option>
-                  <option>Akwa Central Store</option>
-                  <option>Bonapriso Depots</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Dropoff Place</label>
-                <select className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
-                  <option>Akwa – Commercial Avenue</option>
-                  <option>Bonapriso – Rue Joss</option>
-                  <option>Deido – Rond-point</option>
-                  <option>Bali – Elf Station</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Parcel Size Band</label>
-                <select className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500">
-                  <option>Small (Under 5kg / Envelope)</option>
-                  <option>Standard (5kg - 15kg / Box)</option>
-                  <option>Large (15kg - 30kg / Carton)</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Cash on Delivery (COD) Amount</label>
-                <input
-                  type="text"
-                  defaultValue="25,000 XAF"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500"
-                />
-              </div>
-
-              <div className="pt-2">
-                <button className="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold rounded-lg text-sm transition-colors shadow-lg shadow-amber-500/20">
-                  Compare Carrier Quotes
-                </button>
-              </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          <div className="mambanda-card lg:col-span-1 space-y-3">
+            <h3 className="text-base font-bold text-[#f4f6ef]">Request Quote</h3>
+            <div>
+              <label className="block text-[11px] font-bold uppercase text-[#8b90a3] mb-1">Pickup Hub</label>
+              <select className="w-full bg-[#07080f] border border-[#252839] rounded-xl px-3 py-2 text-xs text-[#f4f6ef]">
+                <option>Bonabéri Head Office</option>
+                <option>Akwa Central</option>
+              </select>
             </div>
+            <div>
+              <label className="block text-[11px] font-bold uppercase text-[#8b90a3] mb-1">Dropoff Place</label>
+              <select className="w-full bg-[#07080f] border border-[#252839] rounded-xl px-3 py-2 text-xs text-[#f4f6ef]">
+                <option>Akwa – Commercial Avenue</option>
+                <option>Bonapriso – Rue Joss</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-[11px] font-bold uppercase text-[#8b90a3] mb-1">COD Value</label>
+              <input type="text" defaultValue="25,000 XAF" className="w-full bg-[#07080f] border border-[#252839] rounded-xl px-3 py-2 text-xs text-[#f4f6ef]" />
+            </div>
+            <button className="w-full mambanda-btn text-xs mt-2 justify-center">Calculate Tariffs</button>
           </div>
 
-          <div className="mambanda-card p-6 lg:col-span-2 space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-white">Available Carrier Options</h3>
-                <p className="text-xs text-slate-400">Sorted by price & ETA based on active carrier rate cards</p>
-              </div>
-              <span className="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 rounded-full text-xs font-medium border border-emerald-500/20">
-                3 Carriers Available
-              </span>
-            </div>
-
-            <div className="space-y-3">
-              {/* Option 1 */}
-              <div className={`p-4 rounded-xl border transition-all cursor-pointer ${
-                selectedCarrier === 'ola_trans' ? 'bg-amber-500/10 border-amber-500/50' : 'bg-slate-950/60 border-slate-800 hover:border-slate-700'
-              }`} onClick={() => setSelectedCarrier('ola_trans')}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center font-bold">
-                      OT
-                    </div>
-                    <div>
-                      <div className="flex items-center space-x-2">
-                        <span className="font-semibold text-white">Ola Trans Ltd</span>
-                        <span className="px-2 py-0.5 text-[10px] font-semibold bg-amber-500/20 text-amber-400 rounded">Recommended</span>
-                      </div>
-                      <div className="text-xs text-slate-400 mt-0.5">Rating: 4.6★ (128 reviews) • ETA: 120-180 mins</div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-lg font-bold text-amber-400">2,500 XAF</div>
-                    <div className="text-[10px] text-slate-400">Pickup + Delivery included</div>
-                  </div>
+          <div className="mambanda-card lg:col-span-2 space-y-3">
+            <h3 className="text-base font-bold text-[#f4f6ef]">Carrier Options</h3>
+            <div className="space-y-2">
+              <div className="p-3 bg-[#07080f] border border-[#c9ee0a] rounded-xl flex items-center justify-between">
+                <div>
+                  <div className="font-bold text-[#f4f6ef]">Ola Trans Ltd <span className="mambanda-badge ml-2 text-[9px]">Best Value</span></div>
+                  <div className="text-[11px] text-[#8b90a3]">ETA: 120m • 4.6★</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-base font-extrabold text-[#c9ee0a]">2,500 XAF</div>
                 </div>
               </div>
-
-              {/* Option 2 */}
-              <div className={`p-4 rounded-xl border transition-all cursor-pointer ${
-                selectedCarrier === 'house' ? 'bg-amber-500/10 border-amber-500/50' : 'bg-slate-950/60 border-slate-800 hover:border-slate-700'
-              }`} onClick={() => setSelectedCarrier('house')}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center font-bold">
-                      MC
-                    </div>
-                    <div>
-                      <div className="font-semibold text-white">House Carrier (Mambanda Desk)</div>
-                      <div className="text-xs text-slate-400 mt-0.5">Rating: 4.8★ (450 reviews) • ETA: 90 mins</div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-lg font-bold text-white">2,800 XAF</div>
-                    <div className="text-[10px] text-slate-400">Priority Dispatch</div>
-                  </div>
+              <div className="p-3 bg-[#07080f] border border-[#252839] rounded-xl flex items-center justify-between">
+                <div>
+                  <div className="font-bold text-[#f4f6ef]">House Carrier</div>
+                  <div className="text-[11px] text-[#8b90a3]">ETA: 90m • 4.8★</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-base font-extrabold text-[#f4f6ef]">2,800 XAF</div>
                 </div>
               </div>
-
-              {/* Option 3 */}
-              <div className={`p-4 rounded-xl border transition-all cursor-pointer ${
-                selectedCarrier === 'express' ? 'bg-amber-500/10 border-amber-500/50' : 'bg-slate-950/60 border-slate-800 hover:border-slate-700'
-              }`} onClick={() => setSelectedCarrier('express')}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold">
-                      EL
-                    </div>
-                    <div>
-                      <div className="font-semibold text-white">Express Logistics 3PL</div>
-                      <div className="text-xs text-slate-400 mt-0.5">Rating: 4.3★ (64 reviews) • ETA: 60 mins (Moto)</div>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-lg font-bold text-white">3,500 XAF</div>
-                    <div className="text-[10px] text-slate-400">Express Delivery</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-4 flex justify-end">
-              <button className="px-6 py-2.5 bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold rounded-lg text-sm transition-colors shadow-lg shadow-amber-500/20">
-                Confirm Booking with Selected Carrier
-              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Tab Content: Stores */}
       {activeTab === 'stores' && (
-        <div className="mambanda-card p-6 space-y-4">
-          <h3 className="text-lg font-semibold text-white">Pickup Store Configuration</h3>
-          <p className="text-xs text-slate-400">Configure pickup addresses, contact persons, and preferred carrier defaults.</p>
-          <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Store Name</label>
-                <input type="text" defaultValue="Mambanda Central Store #4" className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white" />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Pickup Contact Phone</label>
-                <input type="text" defaultValue="+237 690 00 11 22" className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white" />
-              </div>
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Pickup Address & Landmark</label>
-              <input type="text" defaultValue="Bonabéri Douala, near Express Union junction" className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white" />
-            </div>
-          </div>
+        <div className="mambanda-card space-y-3">
+          <h3 className="text-base font-bold text-[#f4f6ef]">Store Pickup Settings</h3>
+          <input type="text" defaultValue="Mambanda Central Store #4" className="w-full bg-[#07080f] border border-[#252839] rounded-xl px-3 py-2 text-xs text-[#f4f6ef]" />
         </div>
       )}
     </div>
