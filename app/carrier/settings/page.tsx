@@ -1,61 +1,28 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Settings, Download, Upload, Shield, History, Plus, Save, RefreshCw, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Settings, Download, Save, RefreshCw, CheckCircle2, Plus } from 'lucide-react';
+import { useApp } from '@/lib/AppContext';
 
 export default function CarrierSettingsPage() {
+  const { tariffs, updateTariffFee, auditLogs } = useApp();
   const [activeTab, setActiveTab] = useState<'tariffs' | 'pickup' | 'audit'>('tariffs');
   const [saving, setSaving] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
 
-  // Initial tariff data from Ola Trans Douala Tariff PDF & CSV
-  const [tariffs, setTariffs] = useState([
-    { place: 'Bonabéri (Head Office)', zone: 'Zone 3 (West)', fee: 1000, restricted: false, status: 'Active' },
-    { place: 'Akwa', zone: 'Zone 1 (Central)', fee: 1500, restricted: false, status: 'Active' },
-    { place: 'Bonanjo', zone: 'Zone 1 (Central)', fee: 2000, restricted: true, status: 'Active' },
-    { place: 'Bonapriso', zone: 'Zone 1 (Central)', fee: 2000, restricted: true, status: 'Active' },
-    { place: 'New Bell', zone: 'Zone 1 (Central)', fee: 1500, restricted: false, status: 'Active' },
-    { place: 'Bali', zone: 'Zone 1 (Central)', fee: 1500, restricted: false, status: 'Active' },
-    { place: 'Deido', zone: 'Zone 2 (North)', fee: 1000, restricted: false, status: 'Active' },
-    { place: 'Logpom', zone: 'Zone 2 (North)', fee: 2000, restricted: false, status: 'Active' },
-    { place: 'Bonamoussadi', zone: 'Zone 2 (North)', fee: 2000, restricted: false, status: 'Active' },
-    { place: 'Lendi', zone: 'Zone 2 (North)', fee: 3000, restricted: false, status: 'Active' },
-  ]);
-
-  // Pickup rule config (Ola Trans operational procedure)
   const [pickupRule, setPickupRule] = useState({
-    mode: 'long_term_discount', // 'double_delivery' or 'long_term_discount'
-    discountPct: 20, // 20% discount on pickup fee
-    agencySurcharge: 500, // Travel agency pass-through surcharge
-    waitingTimeMinutes: 10, // 10-minute wait rule
+    mode: 'long_term_discount',
+    discountPct: 20,
+    agencySurcharge: 500,
+    waitingTimeMinutes: 10,
   });
-
-  // Audit log history
-  const [auditLogs, setAuditLogs] = useState([
-    { id: 'AUD-9042', timestamp: '2026-11-20 14:15:22', actor: 'Jean-Pierre (Carrier Owner)', action: 'RATE_CARD_UPDATED', target: 'Lendi delivery fee', before: '2,500 XAF', after: '3,000 XAF', ip: '192.168.1.45', reason: 'Fuel cost adjustment' },
-    { id: 'AUD-9041', timestamp: '2026-11-18 09:30:10', actor: 'Admin (Mambanda Ops)', action: 'RESTRICTED_ZONE_FLAGGED', target: 'Bonanjo & Bonapriso', before: 'Standard', after: 'Restricted (Permit Required)', ip: '10.0.4.12', reason: 'Regulatory compliance' },
-    { id: 'AUD-9040', timestamp: '2026-11-15 11:00:00', actor: 'Jean-Pierre (Carrier Owner)', action: 'PICKUP_RULE_CONFIGURED', target: 'Long-term client rule (-20%)', before: 'Double Delivery (2x)', after: 'Delivery -20% + Delivery', ip: '192.168.1.45', reason: 'Negotiated vendor contract' },
-  ]);
 
   const handleSave = () => {
     setSaving(true);
     setSuccessMsg('');
     setTimeout(() => {
       setSaving(false);
-      setSuccessMsg('Settings and tariff table successfully updated and published.');
-      // Add audit log entry
-      const newLog = {
-        id: `AUD-${Math.floor(1000 + Math.random() * 9000)}`,
-        timestamp: new Date().toISOString().replace('T', ' ').substring(0, 19),
-        actor: 'Jean-Pierre (Carrier Owner)',
-        action: 'TARIFFS_PUBLISHED_V1.3',
-        target: 'Douala Zone Rate Card',
-        before: 'v1.2',
-        after: 'v1.3 (Published)',
-        ip: '192.168.1.45',
-        reason: 'Periodic tariff review'
-      };
-      setAuditLogs([newLog, ...auditLogs]);
+      setSuccessMsg('Settings and tariff table successfully published and recorded in audit log.');
     }, 600);
   };
 
@@ -72,7 +39,6 @@ export default function CarrierSettingsPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="mambanda-card flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <span className="mambanda-badge inline-block mb-2">Carrier Settings & Tariffs</span>
@@ -126,13 +92,12 @@ export default function CarrierSettingsPage() {
         </button>
       </div>
 
-      {/* Tab: Tariffs */}
       {activeTab === 'tariffs' && (
         <div className="mambanda-card space-y-4">
           <div className="flex justify-between items-center">
             <div>
               <h3 className="text-base font-bold text-[#f4f6ef]">Douala Delivery Tariffs (Bonabéri Hub Origin)</h3>
-              <p className="text-xs text-[#8b90a3]">Prices in XAF (Zero-decimal). Edit fees directly or import/export CSV.</p>
+              <p className="text-xs text-[#8b90a3]">Prices in XAF (Zero-decimal). Changes automatically log to the immutable audit trail.</p>
             </div>
             <button className="mambanda-btn text-xs py-1.5 px-3">
               <Plus className="w-3.5 h-3.5" /> Add Location
@@ -164,16 +129,12 @@ export default function CarrierSettingsPage() {
                       <input
                         type="number"
                         value={t.fee}
-                        onChange={(e) => {
-                          const updated = [...tariffs];
-                          updated[idx].fee = Number(e.target.value);
-                          setTariffs(updated);
-                        }}
+                        onChange={(e) => updateTariffFee(idx, Number(e.target.value))}
                         className="w-28 bg-[#07080f] border border-[#252839] rounded-lg px-2.5 py-1 text-xs text-[#c9ee0a] font-bold focus:outline-none focus:border-[#c9ee0a]"
                       />
                     </td>
                     <td className="py-3 px-3 text-right">
-                      <button className="text-[11px] font-bold text-[#c9ee0a] hover:underline">Save</button>
+                      <span className="text-[11px] font-bold text-emerald-400">Synced</span>
                     </td>
                   </tr>
                 ))}
@@ -183,7 +144,6 @@ export default function CarrierSettingsPage() {
         </div>
       )}
 
-      {/* Tab: Pickup Rules */}
       {activeTab === 'pickup' && (
         <div className="mambanda-card space-y-5">
           <div>
@@ -202,9 +162,6 @@ export default function CarrierSettingsPage() {
                 <option value="double_delivery">Double Delivery Fee (2x)</option>
                 <option value="long_term_discount">Long-Term Client Rule (Delivery Fee minus 20% + Delivery Fee)</option>
               </select>
-              <p className="text-[11px] text-[#8b90a3]">
-                Example: If delivery fee is 1,000 XAF, pickup fee is 800 XAF (after 20% discount), total charge = 1,800 XAF.
-              </p>
             </div>
 
             <div className="p-4 bg-[#07080f] border border-[#252839] rounded-xl space-y-3">
@@ -234,7 +191,6 @@ export default function CarrierSettingsPage() {
         </div>
       )}
 
-      {/* Tab: Audit Log */}
       {activeTab === 'audit' && (
         <div className="mambanda-card space-y-4">
           <div className="flex justify-between items-center">

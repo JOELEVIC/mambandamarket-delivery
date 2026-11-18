@@ -1,14 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Users, Truck, Phone, Plus, ShieldAlert, CheckCircle2, X } from 'lucide-react';
+import { Users, Truck, Phone, Plus, X } from 'lucide-react';
+import { useApp } from '@/lib/AppContext';
 
 export default function FleetPage() {
-  const [riders, setRiders] = useState([
-    { id: 'RID-101', name: 'Jean-Pierre Kamga', phone: '+237 699 11 22 33', vehicle: 'Yamaha Moto', hub: 'Bonabéri Hub', codFloat: '45,000 XAF', status: 'On Duty' },
-    { id: 'RID-102', name: 'Emmanuel Talla', phone: '+237 677 44 55 66', vehicle: 'Scooter', hub: 'Akwa Depot', codFloat: '12,000 XAF', status: 'On Delivery' },
-    { id: 'RID-103', name: 'Patrick Mbarga', phone: '+237 690 99 88 77', vehicle: 'Van', hub: 'Bonabéri Hub', codFloat: '180,000 XAF', status: 'On Duty' },
-  ]);
+  const { riders, addRider, toggleRiderStatus } = useApp();
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [newName, setNewName] = useState('');
@@ -28,20 +25,10 @@ export default function FleetPage() {
       codFloat: '0 XAF',
       status: 'On Duty',
     };
-    setRiders([newRider, ...riders]);
+    addRider(newRider);
     setNewName('');
     setNewPhone('');
     setShowAddModal(false);
-  };
-
-  const toggleStatus = (id: string) => {
-    setRiders(riders.map(r => {
-      if (r.id === id) {
-        const nextStatus = r.status === 'Suspended' ? 'On Duty' : 'Suspended';
-        return { ...r, status: nextStatus };
-      }
-      return r;
-    }));
   };
 
   return (
@@ -106,7 +93,7 @@ export default function FleetPage() {
                 </td>
                 <td className="py-3 px-3 text-right">
                   <button
-                    onClick={() => toggleStatus(r.id)}
+                    onClick={() => toggleRiderStatus(r.id)}
                     className={`text-[11px] font-bold px-2.5 py-1 rounded-lg border ${
                       r.status === 'Suspended'
                         ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20'

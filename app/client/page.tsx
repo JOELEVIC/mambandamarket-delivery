@@ -2,36 +2,55 @@
 
 import React, { useState } from 'react';
 import { Package, Plus, Search, MapPin, Truck, MessageSquare, Send, X, CheckCircle2 } from 'lucide-react';
+import { useApp, Order } from '@/lib/AppContext';
 
 export default function ClientDashboard() {
+  const { orders, addOrder, addMessage } = useApp();
   const [activeTab, setActiveTab] = useState<'orders' | 'quote' | 'stores'>('orders');
-  const [selectedCarrier, setSelectedCarrier] = useState<string>('ola_trans');
+  const [selectedCarrier, setSelectedCarrier] = useState<string>('Ola Trans Ltd');
+
+  // Quote form state
+  const [dropoffPlace, setDropoffPlace] = useState('Akwa – Commercial Avenue');
+  const [codValue, setCodValue] = useState('25,000 XAF');
 
   // Chat modal state
   const [chatOpen, setChatOpen] = useState(false);
-  const [activeOrder, setActiveOrder] = useState<any>(null);
-  const [messages, setMessages] = useState([
-    { sender: 'client', text: 'Hello, please call me when you reach the junction near Express Union.', time: '14:15' },
-    { sender: 'vendor', text: 'Noted! Dispatching rider now with your package.', time: '14:18' }
-  ]);
+  const [activeOrder, setActiveOrder] = useState<Order | null>(null);
   const [newMsg, setNewMsg] = useState('');
 
-  const orders = [
-    { id: 'SHP-9021', clientName: 'Marie Talla', clientPhone: '+237 690 11 22 33', destination: 'Akwa, Douala', carrier: 'Ola Trans Ltd', status: 'In Transit', fee: '2,500 XAF', cod: '25,000 XAF', date: 'Today, 14:20' },
-    { id: 'SHP-9022', clientName: 'Paul Biya Jr.', clientPhone: '+237 677 55 44 33', destination: 'Bonapriso, Douala', carrier: 'House Carrier', status: 'Picked Up', fee: '1,800 XAF', cod: '12,500 XAF', date: 'Today, 12:10' },
-    { id: 'SHP-9018', clientName: 'Dr. Ngassa', clientPhone: '+237 655 88 77 66', destination: 'Deido, Douala', carrier: 'Express Logistics', status: 'Delivered', fee: '2,200 XAF', cod: '0 XAF', date: 'Yesterday' },
-  ];
+  const handleBookOrder = () => {
+    const newId = `SHP-${Math.floor(9030 + Math.random() * 100)}`;
+    const newOrder: Order = {
+      id: newId,
+      clientName: 'New Buyer',
+      clientPhone: '+237 699 00 11 22',
+      destination: dropoffPlace,
+      carrier: selectedCarrier,
+      status: 'Pending Pickup',
+      fee: selectedCarrier === 'Ola Trans Ltd' ? '2,500 XAF' : '2,800 XAF',
+      cod: codValue,
+      date: 'Just now',
+      messages: [
+        { sender: 'vendor', text: `Order booked via multi-carrier quote. Assigned to ${selectedCarrier}.`, time: 'Now' }
+      ]
+    };
+    addOrder(newOrder);
+    setActiveTab('orders');
+  };
+
+  const openChat = (order: Order) => {
+    setActiveOrder(order);
+    setChatOpen(true);
+  };
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMsg.trim()) return;
-    setMessages([...messages, { sender: 'vendor', text: newMsg, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }]);
+    if (!newMsg.trim() || !activeOrder) return;
+    addMessage(activeOrder.id, 'vendor', newMsg);
     setNewMsg('');
-  };
-
-  const openChat = (order: any) => {
-    setActiveOrder(order);
-    setChatOpen(true);
+    // Update local active order messages view
+    const updated = orders.find(o => o.id === activeOrder.id);
+    if (updated) setActiveOrder(updated);
   };
 
   return (
@@ -41,7 +60,7 @@ export default function ClientDashboard() {
         <div>
           <span className="mambanda-badge inline-block mb-2">Vendor Portal</span>
           <h1 className="text-2xl font-extrabold text-[#f4f6ef]">Client Shipping & Direct Messaging</h1>
-          <p className="text-[#8b90a3] text-xs mt-1">Manage delivery requests, multi-carrier quotes, and contact clients directly via API messaging.</p>
+          <p className="text-[#8b90a3] text-xs mt-1">Manage live delivery orders, multi-carrier quotes, and contact clients directly via API messaging.</p>
         </div>
         <button
           onClick={() => setActiveTab('quote')}
@@ -60,7 +79,7 @@ export default function ClientDashboard() {
             activeTab === 'orders' ? 'bg-[#c9ee0a] text-[#0a0b10]' : 'text-[#8b90a3] hover:text-[#f4f6ef]'
           }`}
         >
-          Orders ({orders.length})
+          Live Orders ({orders.length})
         </button>
         <button
           onClick={() => setActiveTab('quote')}
@@ -68,7 +87,7 @@ export default function ClientDashboard() {
             activeTab === 'quote' ? 'bg-[#c9ee0a] text-[#0a0b10]' : 'text-[#8b90a3] hover:text-[#f4f6ef]'
           }`}
         >
-          Quote Engine
+          Quote Engine & Booking
         </button>
         <button
           onClick={() => setActiveTab('stores')}
@@ -131,7 +150,7 @@ export default function ClientDashboard() {
                         className="inline-flex items-center space-x-1 px-2.5 py-1 bg-[#c9ee0a]/10 hover:bg-[#c9ee0a]/20 text-[#c9ee0a] rounded-lg text-[11px] font-bold transition-colors border border-[#c9ee0a]/20"
                       >
                         <MessageSquare className="w-3.5 h-3.5" />
-                        <span>Chat Client</span>
+                        <span>Chat Client ({o.messages.length})</span>
                       </button>
                     </td>
                   </tr>
@@ -145,41 +164,79 @@ export default function ClientDashboard() {
       {activeTab === 'quote' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           <div className="mambanda-card lg:col-span-1 space-y-3">
-            <h3 className="text-base font-bold text-[#f4f6ef]">Request Quote</h3>
+            <h3 className="text-base font-bold text-[#f4f6ef]">Request Quote & Book</h3>
             <div>
               <label className="block text-[11px] font-bold uppercase text-[#8b90a3] mb-1">Pickup Hub</label>
               <select className="w-full bg-[#07080f] border border-[#252839] rounded-xl px-3 py-2 text-xs text-[#f4f6ef]">
-                <option>Bonabéri Head Office</option>
-                <option>Akwa Central</option>
+                <option>Bonabéri Head Office (HQ)</option>
+                <option>Akwa Central Hub</option>
               </select>
             </div>
             <div>
               <label className="block text-[11px] font-bold uppercase text-[#8b90a3] mb-1">Dropoff Place</label>
-              <select className="w-full bg-[#07080f] border border-[#252839] rounded-xl px-3 py-2 text-xs text-[#f4f6ef]">
-                <option>Akwa – Commercial Avenue</option>
-                <option>Bonapriso – Rue Joss</option>
+              <select
+                value={dropoffPlace}
+                onChange={(e) => setDropoffPlace(e.target.value)}
+                className="w-full bg-[#07080f] border border-[#252839] rounded-xl px-3 py-2 text-xs text-[#f4f6ef]"
+              >
+                <option value="Akwa – Commercial Avenue">Akwa – Commercial Avenue</option>
+                <option value="Bonapriso – Rue Joss">Bonapriso – Rue Joss</option>
+                <option value="Deido – Rond-point">Deido – Rond-point</option>
+                <option value="Lendi – Carrefour">Lendi – Carrefour</option>
               </select>
             </div>
             <div>
               <label className="block text-[11px] font-bold uppercase text-[#8b90a3] mb-1">COD Value</label>
-              <input type="text" defaultValue="25,000 XAF" className="w-full bg-[#07080f] border border-[#252839] rounded-xl px-3 py-2 text-xs text-[#f4f6ef]" />
+              <input
+                type="text"
+                value={codValue}
+                onChange={(e) => setCodValue(e.target.value)}
+                className="w-full bg-[#07080f] border border-[#252839] rounded-xl px-3 py-2 text-xs text-[#f4f6ef]"
+              />
             </div>
-            <button className="w-full mambanda-btn text-xs mt-2 justify-center">Calculate Tariffs</button>
           </div>
 
-          <div className="mambanda-card lg:col-span-2 space-y-3">
-            <h3 className="text-base font-bold text-[#f4f6ef]">Carrier Options</h3>
-            <div className="space-y-2">
-              <div className="p-3 bg-[#07080f] border border-[#c9ee0a] rounded-xl flex items-center justify-between">
-                <div>
-                  <div className="font-bold text-[#f4f6ef]">Ola Trans Ltd <span className="mambanda-badge ml-2 text-[9px]">Best Value</span></div>
-                  <div className="text-[11px] text-[#8b90a3]">ETA: 120m • 4.6★</div>
+          <div className="mambanda-card lg:col-span-2 space-y-4">
+            <h3 className="text-base font-bold text-[#f4f6ef]">Live Carrier Tariffs</h3>
+            <div className="space-y-3">
+              <div
+                onClick={() => setSelectedCarrier('Ola Trans Ltd')}
+                className={`p-4 rounded-xl border cursor-pointer transition-all ${
+                  selectedCarrier === 'Ola Trans Ltd' ? 'bg-[#c9ee0a]/10 border-[#c9ee0a]' : 'bg-[#07080f] border-[#252839]'
+                }`}
+              >
+                <div className="flex justify-between items-center">
+                  <div>
+                    <div className="font-bold text-[#f4f6ef]">Ola Trans Ltd <span className="mambanda-badge ml-2 text-[9px]">Recommended</span></div>
+                    <div className="text-[11px] text-[#8b90a3] mt-0.5">ETA: 120m • 4.6★ • Douala Tariff</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-base font-extrabold text-[#c9ee0a]">2,500 XAF</div>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-base font-extrabold text-[#c9ee0a]">2,500 XAF</div>
+              </div>
+
+              <div
+                onClick={() => setSelectedCarrier('House Carrier')}
+                className={`p-4 rounded-xl border cursor-pointer transition-all ${
+                  selectedCarrier === 'House Carrier' ? 'bg-[#c9ee0a]/10 border-[#c9ee0a]' : 'bg-[#07080f] border-[#252839]'
+                }`}
+              >
+                <div className="flex justify-between items-center">
+                  <div>
+                    <div className="font-bold text-[#f4f6ef]">House Carrier (Mambanda Desk)</div>
+                    <div className="text-[11px] text-[#8b90a3] mt-0.5">ETA: 90m • 4.8★ • Direct Desk</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-base font-extrabold text-[#f4f6ef]">2,800 XAF</div>
+                  </div>
                 </div>
               </div>
             </div>
+
+            <button onClick={handleBookOrder} className="w-full mambanda-btn text-xs py-3 justify-center">
+              Confirm & Book with {selectedCarrier}
+            </button>
           </div>
         </div>
       )}
@@ -206,7 +263,7 @@ export default function ClientDashboard() {
             </div>
 
             <div className="flex-1 overflow-y-auto space-y-3 pr-2">
-              {messages.map((m, idx) => (
+              {activeOrder.messages.map((m: any, idx: number) => (
                 <div key={idx} className={`flex ${m.sender === 'vendor' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[80%] p-3 rounded-2xl text-xs ${
                     m.sender === 'vendor'

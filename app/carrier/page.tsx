@@ -1,9 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Truck, MapPin, Clock, Plus } from 'lucide-react';
+import { Truck, MapPin, Clock, Plus, CheckCircle2 } from 'lucide-react';
+import { useApp } from '@/lib/AppContext';
 
 export default function CarrierPortal() {
+  const { orders, updateOrderStatus } = useApp();
   const [activeTab, setActiveTab] = useState<'inbox' | 'coverage' | 'rates'>('inbox');
 
   const pendingOffers = [
@@ -37,7 +39,7 @@ export default function CarrierPortal() {
             activeTab === 'inbox' ? 'bg-[#c9ee0a] text-[#0a0b10]' : 'text-[#8b90a3] hover:text-[#f4f6ef]'
           }`}
         >
-          Offer Inbox ({pendingOffers.length})
+          Job Inbox & Active ({orders.length})
         </button>
         <button
           onClick={() => setActiveTab('coverage')}
@@ -58,29 +60,70 @@ export default function CarrierPortal() {
       </div>
 
       {activeTab === 'inbox' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {pendingOffers.map((o) => (
-            <div key={o.id} className="mambanda-card border-l-4 border-l-[#c9ee0a] space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="font-mono text-xs text-[#c9ee0a] font-bold">{o.id}</span>
-                <span className="text-[11px] text-[#8b90a3] flex items-center gap-1">
-                  <Clock className="w-3 h-3" /> {o.expires} left
-                </span>
-              </div>
-              <div>
-                <div className="font-bold text-[#f4f6ef]">{o.client}</div>
-                <div className="text-xs text-[#8b90a3] mt-1">{o.from} → {o.to}</div>
-              </div>
-              <div className="flex justify-between items-center pt-2 border-t border-[#252839] text-xs">
-                <div>Fee: <span className="font-bold text-[#c9ee0a]">{o.fee}</span></div>
-                <div>COD: <span className="font-bold">{o.cod}</span></div>
-              </div>
-              <div className="flex space-x-2 pt-1">
-                <button className="flex-1 py-1.5 bg-[#c9ee0a] text-[#0a0b10] font-bold rounded-lg text-xs">Accept</button>
-                <button className="px-3 py-1.5 bg-[#07080f] text-[#8b90a3] font-bold rounded-lg text-xs border border-[#252839]">Decline</button>
-              </div>
+        <div className="space-y-6">
+          <div>
+            <h3 className="text-base font-bold text-[#f4f6ef] mb-3">Live Assigned Shipments</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {orders.map((o) => (
+                <div key={o.id} className="mambanda-card border-l-4 border-l-[#c9ee0a] space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="font-mono text-xs text-[#c9ee0a] font-bold">{o.id}</span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#1a1d2b] text-[#c9ee0a] border border-[#252839]">{o.status}</span>
+                  </div>
+                  <div>
+                    <div className="font-bold text-[#f4f6ef]">{o.clientName} ({o.clientPhone})</div>
+                    <div className="text-xs text-[#8b90a3] mt-1">Destination: {o.destination}</div>
+                  </div>
+                  <div className="flex justify-between items-center pt-2 border-t border-[#252839] text-xs">
+                    <div>Fee: <span className="font-bold text-[#c9ee0a]">{o.fee}</span></div>
+                    <div>COD: <span className="font-bold">{o.cod}</span></div>
+                  </div>
+                  <div className="flex space-x-2 pt-1">
+                    <button
+                      onClick={() => updateOrderStatus(o.id, 'In Transit')}
+                      className="flex-1 py-1.5 bg-[#c9ee0a] text-[#0a0b10] font-bold rounded-lg text-xs"
+                    >
+                      Mark In Transit
+                    </button>
+                    <button
+                      onClick={() => updateOrderStatus(o.id, 'Delivered')}
+                      className="px-3 py-1.5 bg-emerald-600 text-white font-bold rounded-lg text-xs"
+                    >
+                      Mark Delivered
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
+
+          <div>
+            <h3 className="text-base font-bold text-[#f4f6ef] mb-3">Pending Offers Inbox</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {pendingOffers.map((o) => (
+                <div key={o.id} className="mambanda-card border-l-4 border-l-blue-500 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="font-mono text-xs text-blue-400 font-bold">{o.id}</span>
+                    <span className="text-[11px] text-[#8b90a3] flex items-center gap-1">
+                      <Clock className="w-3 h-3" /> {o.expires} left
+                    </span>
+                  </div>
+                  <div>
+                    <div className="font-bold text-[#f4f6ef]">{o.client}</div>
+                    <div className="text-xs text-[#8b90a3] mt-1">{o.from} → {o.to}</div>
+                  </div>
+                  <div className="flex justify-between items-center pt-2 border-t border-[#252839] text-xs">
+                    <div>Fee: <span className="font-bold text-[#c9ee0a]">{o.fee}</span></div>
+                    <div>COD: <span className="font-bold">{o.cod}</span></div>
+                  </div>
+                  <div className="flex space-x-2 pt-1">
+                    <button className="flex-1 py-1.5 bg-blue-600 text-white font-bold rounded-lg text-xs">Accept Offer</button>
+                    <button className="px-3 py-1.5 bg-[#07080f] text-[#8b90a3] font-bold rounded-lg text-xs border border-[#252839]">Decline</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
