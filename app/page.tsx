@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { Truck, Package, Users, DollarSign, CheckCircle2, ArrowRight, Activity, Zap, Shield } from 'lucide-react';
+import { Truck, Package, Users, DollarSign, CheckCircle2, ArrowRight } from 'lucide-react';
 
 export default function ControlTower() {
   const stats = [
@@ -28,12 +28,12 @@ export default function ControlTower() {
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#f4f6ef]">
               Logistics Command Center
             </h1>
-            <p className="text-[#8b90a3] text-sm mt-1 max-w-xl">
+            <p className="text-[#8b90a3] text-sm mt-1 max-w-2xl">
               Multi-tenant marketplace layer for Cameroon commerce. Managing quotes, dispatch agents, and escrow reconciliation.
             </p>
           </div>
           <div className="flex items-center space-x-3">
-            <Link href="/client" className="mambanda-btn text-sm">
+            <Link href="/client" className="mambanda-btn text-xs sm:text-sm">
               <span>New Shipment</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
@@ -41,23 +41,19 @@ export default function ControlTower() {
         </div>
       </div>
 
-      {/* Stats Grid with Tooltips */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {stats.map((stat, idx) => {
           const Icon = stat.icon;
           return (
             <div key={idx} className="mambanda-card flex items-center justify-between group relative">
               <div>
                 <span className="text-[11px] font-bold uppercase tracking-wider text-[#8b90a3]">{stat.name}</span>
-                <div className="text-2xl font-extrabold text-[#f4f6ef] mt-1">{stat.value}</div>
+                <div className="text-xl xl:text-2xl font-extrabold text-[#f4f6ef] mt-1">{stat.value}</div>
                 <div className="text-xs font-semibold text-[#c9ee0a] mt-1">{stat.change}</div>
               </div>
-              <div className="w-12 h-12 rounded-2xl bg-[#1a1d2b] border border-[#252839] text-[#c9ee0a] flex items-center justify-center group-hover:scale-105 transition-transform">
+              <div className="w-12 h-12 rounded-2xl bg-[#1a1d2b] border border-[#252839] text-[#c9ee0a] flex items-center justify-center group-hover:scale-105 transition-transform flex-shrink-0">
                 <Icon className="w-6 h-6" />
-              </div>
-              {/* Tooltip */}
-              <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-2.5 py-1 bg-[#1a1d2b] text-[#f4f6ef] text-[11px] rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none border border-[#252839] shadow-lg">
-                {stat.tooltip}
               </div>
             </div>
           );
@@ -90,7 +86,7 @@ export default function ControlTower() {
       </div>
 
       {/* Live Shipments Table */}
-      <div className="mambanda-card">
+      <div className="mambanda-card overflow-hidden">
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="text-base font-bold text-[#f4f6ef]">Recent Shipments</h3>
@@ -101,8 +97,8 @@ export default function ControlTower() {
           </Link>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+        <div className="overflow-x-auto -mx-6 px-6 sm:mx-0 sm:px-0">
+          <table className="w-full text-left text-xs whitespace-nowrap sm:whitespace-normal">
             <thead className="bg-[#07080f] text-[#8b90a3] uppercase tracking-wider border-b border-[#252839]">
               <tr>
                 <th className="py-3 px-3">Tracking ID</th>
