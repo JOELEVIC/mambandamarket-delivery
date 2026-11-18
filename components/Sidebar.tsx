@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Truck, Package, Users, DollarSign, LayoutDashboard, Menu, X, ShieldCheck } from 'lucide-react';
+import { Truck, Package, Users, DollarSign, LayoutDashboard, Menu, X, ShieldCheck, Settings } from 'lucide-react';
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -13,6 +13,7 @@ export default function Sidebar() {
     { name: 'Control Tower', href: '/', icon: LayoutDashboard, tooltip: 'Global operations & analytics' },
     { name: 'Client Orders', href: '/client', icon: Package, tooltip: 'Shipping requests, quotes & store fulfillment' },
     { name: 'Carrier Portal', href: '/carrier', icon: Truck, tooltip: 'Ola Trans dispatch inbox, coverage & rate cards' },
+    { name: 'Tariffs & Settings', href: '/carrier/settings', icon: Settings, tooltip: 'Configure zones, pickup tariffs & audit logs' },
     { name: 'Fleet & Riders', href: '/fleet', icon: Users, tooltip: 'Agent roster, vehicles, shifts & COD float' },
     { name: 'Reconciliation', href: '/finance', icon: DollarSign, tooltip: 'Append-only ledger, COD & escrow settlements' },
   ];
