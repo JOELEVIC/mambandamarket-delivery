@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Truck, Package, Users, DollarSign, LayoutDashboard, Menu, X, ShieldCheck, Settings, MessageSquare, Building2, Save, CheckCircle2 } from 'lucide-react';
+import { Truck, Package, Users, DollarSign, LayoutDashboard, Menu, X, ShieldCheck, Settings, MessageSquare, Building2, Save, CheckCircle2, Upload, Award } from 'lucide-react';
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -16,6 +16,8 @@ export default function Sidebar() {
   const [niu, setNiu] = useState('M08241289341P');
   const [contactEmail, setContactEmail] = useState('olatranslimited@gmail.com');
   const [contactPhone, setContactPhone] = useState('+237 678 23 74 56');
+  const [logoUrl, setLogoUrl] = useState('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150');
+  const [verifiedStatus, setVerifiedStatus] = useState(true);
   const [savedSuccess, setSavedSuccess] = useState(false);
 
   // Close mobile drawer on route change
@@ -139,104 +141,136 @@ export default function Sidebar() {
             className="w-full text-left flex items-center space-x-3 p-2.5 rounded-xl bg-[#1a1d2b] border border-[#252839] hover:border-[#c9ee0a] transition-all group cursor-pointer"
             title="Click to open Account & Company Settings"
           >
-            <div className="w-9 h-9 rounded-full bg-[#252839] text-[#c9ee0a] font-bold flex items-center justify-center text-xs border border-[#c9ee0a]/20 group-hover:scale-105 transition-transform">
-              OT
+            <div className="w-9 h-9 rounded-full bg-[#252839] text-[#c9ee0a] font-bold flex items-center justify-center text-xs border border-[#c9ee0a]/20 group-hover:scale-105 transition-transform overflow-hidden">
+              <span className="text-[11px] font-extrabold text-[#c9ee0a]">OT</span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-[#f4f6ef] truncate">Ola Trans Ltd</p>
-              <p className="text-[10px] text-[#8b90a3] truncate">Company Settings</p>
+              <div className="flex items-center space-x-1.5">
+                <p className="text-xs font-bold text-[#f4f6ef] truncate">Ola Trans Ltd</p>
+                <ShieldCheck className="w-3.5 h-3.5 text-[#c9ee0a] flex-shrink-0" />
+              </div>
+              <p className="text-[10px] text-[#8b90a3] truncate">Verified Partner</p>
             </div>
             <Settings className="w-4 h-4 text-[#8b90a3] group-hover:text-[#c9ee0a] flex-shrink-0 transition-colors" />
           </button>
         </div>
       </aside>
 
-      {/* Account & Company Settings Modal */}
+      {/* Account & Company Settings Modal (Enlarged) */}
       {settingsModalOpen && (
-        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-          <div className="mambanda-card w-full max-w-lg space-y-4 border border-[#c9ee0a]/30">
-            <div className="flex justify-between items-center border-b border-[#252839] pb-3">
-              <div className="flex items-center space-x-2">
-                <Building2 className="w-5 h-5 text-[#c9ee0a]" />
-                <h3 className="text-lg font-bold text-[#f4f6ef]">Account & Company Settings</h3>
+        <div className="fixed inset-0 bg-black/85 z-50 flex items-center justify-center p-4 backdrop-blur-md">
+          <div className="mambanda-card w-full max-w-2xl space-y-6 border border-[#c9ee0a]/40 shadow-2xl p-6 sm:p-8">
+            <div className="flex justify-between items-center border-b border-[#252839] pb-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-xl bg-[#c9ee0a]/10 border border-[#c9ee0a]/20 text-[#c9ee0a] flex items-center justify-center">
+                  <Building2 className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-extrabold text-[#f4f6ef]">Account & Company Settings</h3>
+                  <p className="text-xs text-[#8b90a3]">Manage legal entity, branding, avatar, and verification status.</p>
+                </div>
               </div>
-              <button onClick={() => setSettingsModalOpen(false)} className="text-[#8b90a3] hover:text-white">
+              <button onClick={() => setSettingsModalOpen(false)} className="text-[#8b90a3] hover:text-white p-1 rounded-lg bg-[#1a1d2b] border border-[#252839]">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {savedSuccess ? (
-              <div className="p-6 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-2xl text-center space-y-2">
-                <CheckCircle2 className="w-8 h-8 mx-auto" />
-                <div className="font-bold text-sm">Company Settings Updated!</div>
-                <p className="text-xs text-[#8b90a3]">Changes saved successfully across all tenant nodes.</p>
+              <div className="p-8 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-2xl text-center space-y-3">
+                <CheckCircle2 className="w-10 h-10 mx-auto" />
+                <div className="font-extrabold text-base">Company Settings Updated Successfully!</div>
+                <p className="text-xs text-[#8b90a3]">Changes have been published across all tenant nodes and audit logs.</p>
               </div>
             ) : (
-              <form onSubmit={handleSaveCompany} className="space-y-3">
-                <div>
-                  <label className="block text-xs font-bold uppercase text-[#8b90a3] mb-1">Company Legal Name</label>
-                  <input
-                    type="text"
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                    className="w-full bg-[#07080f] border border-[#252839] rounded-xl px-3 py-2 text-xs text-[#f4f6ef]"
-                    required
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-bold uppercase text-[#8b90a3] mb-1">RCCM Registration</label>
-                    <input
-                      type="text"
-                      value={rccm}
-                      onChange={(e) => setRccm(e.target.value)}
-                      className="w-full bg-[#07080f] border border-[#252839] rounded-xl px-3 py-2 text-xs text-[#f4f6ef]"
-                      required
-                    />
+              <form onSubmit={handleSaveCompany} className="space-y-5">
+                {/* Profile Picture / Avatar & Verified Status Header */}
+                <div className="flex flex-col sm:flex-row items-center gap-5 p-4 bg-[#07080f] rounded-2xl border border-[#252839]">
+                  <div className="relative">
+                    <div className="w-20 h-20 rounded-2xl bg-[#1a1d2b] border-2 border-[#c9ee0a]/40 flex items-center justify-center text-[#c9ee0a] font-black text-2xl overflow-hidden shadow-lg">
+                      OT
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 text-[#0a0b10] flex items-center justify-center border-2 border-[#07080f]" title="Verified Business">
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-xs font-bold uppercase text-[#8b90a3] mb-1">NIU Tax Number</label>
-                    <input
-                      type="text"
-                      value={niu}
-                      onChange={(e) => setNiu(e.target.value)}
-                      className="w-full bg-[#07080f] border border-[#252839] rounded-xl px-3 py-2 text-xs text-[#f4f6ef]"
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-bold uppercase text-[#8b90a3] mb-1">Contact Email</label>
-                    <input
-                      type="email"
-                      value={contactEmail}
-                      onChange={(e) => setContactEmail(e.target.value)}
-                      className="w-full bg-[#07080f] border border-[#252839] rounded-xl px-3 py-2 text-xs text-[#f4f6ef]"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold uppercase text-[#8b90a3] mb-1">Contact Phone</label>
-                    <input
-                      type="text"
-                      value={contactPhone}
-                      onChange={(e) => setContactPhone(e.target.value)}
-                      className="w-full bg-[#07080f] border border-[#252839] rounded-xl px-3 py-2 text-xs text-[#f4f6ef]"
-                      required
-                    />
+                  <div className="flex-1 text-center sm:text-left space-y-1">
+                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                      <span className="text-base font-extrabold text-[#f4f6ef]">Ola Trans Ltd</span>
+                      <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        <Award className="w-3 h-3" />
+                        <span>Verified Business (RCCM / NIU)</span>
+                      </span>
+                    </div>
+                    <p className="text-xs text-[#8b90a3]">Partner 3PL logistics provider for Douala & Yaoundé regions.</p>
                   </div>
                 </div>
 
-                <div className="pt-3 flex justify-end space-x-2">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-[#8b90a3] mb-1">Company Legal Name</label>
+                    <input
+                      type="text"
+                      value={companyName}
+                      onChange={(e) => setCompanyName(e.target.value)}
+                      className="w-full bg-[#07080f] border border-[#252839] rounded-xl px-4 py-2.5 text-xs text-[#f4f6ef] focus:outline-none focus:border-[#c9ee0a]"
+                      required
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold uppercase text-[#8b90a3] mb-1">RCCM Registration Number</label>
+                      <input
+                        type="text"
+                        value={rccm}
+                        onChange={(e) => setRccm(e.target.value)}
+                        className="w-full bg-[#07080f] border border-[#252839] rounded-xl px-4 py-2.5 text-xs text-[#f4f6ef] focus:outline-none focus:border-[#c9ee0a]"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold uppercase text-[#8b90a3] mb-1">NIU Taxpayer Number</label>
+                      <input
+                        type="text"
+                        value={niu}
+                        onChange={(e) => setNiu(e.target.value)}
+                        className="w-full bg-[#07080f] border border-[#252839] rounded-xl px-4 py-2.5 text-xs text-[#f4f6ef] focus:outline-none focus:border-[#c9ee0a]"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold uppercase text-[#8b90a3] mb-1">Official Contact Email</label>
+                      <input
+                        type="email"
+                        value={contactEmail}
+                        onChange={(e) => setContactEmail(e.target.value)}
+                        className="w-full bg-[#07080f] border border-[#252839] rounded-xl px-4 py-2.5 text-xs text-[#f4f6ef] focus:outline-none focus:border-[#c9ee0a]"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold uppercase text-[#8b90a3] mb-1">Support Phone Number</label>
+                      <input
+                        type="text"
+                        value={contactPhone}
+                        onChange={(e) => setContactPhone(e.target.value)}
+                        className="w-full bg-[#07080f] border border-[#252839] rounded-xl px-4 py-2.5 text-xs text-[#f4f6ef] focus:outline-none focus:border-[#c9ee0a]"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-[#252839] flex justify-end space-x-3">
                   <button
                     type="button"
                     onClick={() => setSettingsModalOpen(false)}
-                    className="px-4 py-2 bg-[#07080f] text-[#8b90a3] text-xs font-bold rounded-xl border border-[#252839]"
+                    className="px-5 py-2.5 bg-[#07080f] text-[#8b90a3] text-xs font-bold rounded-xl border border-[#252839] hover:text-white"
                   >
                     Cancel
                   </button>
-                  <button type="submit" className="mambanda-btn text-xs">
+                  <button type="submit" className="mambanda-btn text-xs py-2.5 px-6">
                     <Save className="w-4 h-4" />
                     <span>Save Company Settings</span>
                   </button>
