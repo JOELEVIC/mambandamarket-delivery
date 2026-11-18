@@ -1,13 +1,18 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Truck, Package, Users, DollarSign, LayoutDashboard, Menu, X, ShieldCheck, Settings } from 'lucide-react';
+import { Truck, Package, Users, DollarSign, LayoutDashboard, Menu, X, ShieldCheck, Settings, MessageSquare } from 'lucide-react';
 
 export default function Sidebar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Close mobile drawer on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
 
   const navItems = [
     { name: 'Control Tower', href: '/', icon: LayoutDashboard, tooltip: 'Global operations & analytics' },
@@ -16,12 +21,13 @@ export default function Sidebar() {
     { name: 'Tariffs & Settings', href: '/carrier/settings', icon: Settings, tooltip: 'Configure zones, pickup tariffs & audit logs' },
     { name: 'Fleet & Riders', href: '/fleet', icon: Users, tooltip: 'Agent roster, vehicles, shifts & COD float' },
     { name: 'Reconciliation', href: '/finance', icon: DollarSign, tooltip: 'Append-only ledger, COD & escrow settlements' },
+    { name: 'Support / Contact', href: '/support', icon: MessageSquare, tooltip: 'Direct support & messaging with Mambanda Market' },
   ];
 
   return (
     <>
       {/* Mobile Top Bar */}
-      <div className="lg:hidden flex items-center justify-between bg-[#11131e] border-b border-[#252839] px-4 py-3 sticky top-0 z-50">
+      <div className="lg:hidden flex items-center justify-between bg-[#11131e] border-b border-[#252839] px-4 py-3 sticky top-0 z-40">
         <div className="flex items-center space-x-3">
           <div className="w-9 h-9 rounded-xl bg-[#c9ee0a] text-[#0a0b10] flex items-center justify-center font-extrabold shadow-lg">
             <Truck className="w-5 h-5" />
@@ -35,6 +41,7 @@ export default function Sidebar() {
         <div className="flex items-center space-x-2">
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Toggle navigation menu"
             className="p-2 text-[#8b90a3] hover:text-[#f4f6ef] rounded-lg bg-[#1a1d2b] border border-[#252839]"
           >
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -45,7 +52,7 @@ export default function Sidebar() {
       {/* Mobile Sidebar Overlay */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 bg-black/70 z-40 lg:hidden backdrop-blur-sm"
+          className="fixed inset-0 bg-black/70 z-40 lg:hidden backdrop-blur-sm transition-opacity"
           onClick={() => setMobileOpen(false)}
         />
       )}
@@ -53,7 +60,7 @@ export default function Sidebar() {
       {/* Sidebar Navigation */}
       <aside className={`
         fixed top-0 bottom-0 left-0 z-50 w-64 bg-[#11131e] border-r border-[#252839] flex flex-col transition-transform duration-300 ease-in-out
-        lg:translate-x-0 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
+        lg:translate-x-0 ${mobileOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'}
       `}>
         {/* Brand Header */}
         <div className="p-6 border-b border-[#252839] flex items-center justify-between">
@@ -72,6 +79,7 @@ export default function Sidebar() {
           </div>
           <button
             onClick={() => setMobileOpen(false)}
+            aria-label="Close navigation menu"
             className="lg:hidden text-[#8b90a3] hover:text-[#f4f6ef]"
           >
             <X className="w-5 h-5" />
