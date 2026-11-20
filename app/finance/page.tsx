@@ -21,6 +21,26 @@ export default function FinancePage() {
   const [declare, setDeclare] = useState<null | { kind: string; rider_id?: string; amount: number; method: string; reference: string }>(null);
   const [open, setOpen] = useState<any | null>(null);
   const [dispute, setDispute] = useState<{ entry: any; reason: string } | null>(null);
+  // Pay what we owe straight by MTN MoMo: the prompt lands on the number given,
+  // and the remittance confirms itself once MTN says SUCCESSFUL.
+  const [momo, setMomo] = useState<null | { amount: number; msisdn: string; txId?: string; status?: string; reason?: string | null }>(null);
+  const payMomo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const m = momo!;
+    const r = await run('momo', () => post<{ momo: { id: string; status: string } }>('/carrier/remittances/momo', { amount_cents: Number(m.amount), msisdn: m.msisdn }),
+      'Approve the payment on the phone (MoMo prompt or *126#)');
+    if (!r) return;
+    setMomo({ ...m, txId: r.momo.id, status: 'pending' });
+    for (let i = 0; i < 20; i++) {
+      await new Promise((ok) => setTimeout(ok, 4000));
+      const s = await post<{ momo: { status: string; failure_reason: string | null } }>(`/carrier/remittances/momo/${r.momo.id}/refresh`).catch(() => null);
+      if (s && s.momo.status !== 'pending') {
+        setMomo((cur) => cur && { ...cur, status: s.momo.status, reason: s.momo.failure_reason });
+        void sum.reload(); void rem.reload(); void ledger.reload();
+        return;
+      }
+    }
+  };
   const { busy, run } = useAction();
 
   const s = sum.data;
@@ -46,7 +66,8 @@ export default function FinancePage() {
       <PageHeader title="Money" subtitle="Cash collected for Mambanda, your fees, what you remitted and your statements."
         actions={<>
           {can('cod.confirm') && <Button variant="ghost" onClick={() => setDeclare({ kind: 'rider_handover', amount: 0, method: 'cash', reference: '' })}>Rider handed cash in</Button>}
-          {can('finance.manage') && <Button onClick={() => setDeclare({ kind: 'carrier_remit', amount: Math.max(0, s?.balance_cents ?? 0), method: 'mtn_momo', reference: '' })}>Declare a remittance</Button>}
+          {can('finance.manage') && <Button variant="ghost" onClick={() => setDeclare({ kind: 'carrier_remit', amount: Math.max(0, s?.balance_cents ?? 0), method: 'mtn_momo', reference: '' })}>Declare a transfer</Button>}
+          {can('finance.manage') && <Button onClick={() => setMomo({ amount: Math.max(0, s?.balance_cents ?? 0), msisdn: '' })}>Pay by MoMo</Button>}
         </>} />
 
       <ErrorNote error={sum.error} onRetry={sum.reload} />
@@ -142,6 +163,25 @@ export default function FinancePage() {
             {declare.method !== 'cash' && <Field label="Transaction reference" hint="From the MoMo / Orange Money SMS or bank slip"><Input value={declare.reference} onChange={(e) => setDeclare({ ...declare, reference: e.target.value })} required /></Field>}
             <Button type="submit" busy={busy === 'dec'} className="w-full">Record</Button>
           </form>
+        )}
+      </Modal>
+
+      <Modal open={!!momo} onClose={() => setMomo(null)} title="Pay Mambanda by MTN MoMo">
+        {momo && !momo.txId && (
+          <form onSubmit={payMomo} className="space-y-4">
+            <p className="text-sm text-mute">We send a payment request to this number. Approve it on the phone and the money is credited to your balance automatically — no reference to type.</p>
+            <Field label="Amount (FCFA)"><Input type="number" min={1} value={momo.amount} onChange={(e) => setMomo({ ...momo, amount: Number(e.target.value) })} required /></Field>
+            <Field label="MTN MoMo number that pays" hint="6XX XX XX XX"><Input inputMode="tel" value={momo.msisdn} onChange={(e) => setMomo({ ...momo, msisdn: e.target.value })} required /></Field>
+            <Button type="submit" busy={busy === 'momo'} className="w-full">Send payment request</Button>
+          </form>
+        )}
+        {momo?.txId && (
+          <div className="space-y-3 text-sm">
+            {momo.status === 'pending' && <><Spinner label="Waiting for the approval on the phone…" /><p className="text-mute">Dial *126# if the prompt did not appear. You can close this window; the payment still counts when it is approved.</p></>}
+            {momo.status === 'succeeded' && <p className="text-lime font-bold">Paid. {xaf(momo.amount)} is off your balance.</p>}
+            {momo.status === 'failed' && <p className="text-rose-300">Not paid: {momo.reason ?? 'the request was declined or timed out'}. Nothing was taken; try again.</p>}
+            <Button variant="ghost" className="w-full" onClick={() => setMomo(null)}>Close</Button>
+          </div>
         )}
       </Modal>
 

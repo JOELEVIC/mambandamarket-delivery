@@ -17,6 +17,7 @@ export default function SettingsPage() {
     e.preventDefault();
     const body: Record<string, unknown> = {
       name: p.name, contact_email: p.contact_email || undefined, contact_phone: p.contact_phone || undefined, tax_id: p.tax_id || null,
+      legal_name: p.legal_name || null, registration_number: p.registration_number || null, city: p.city || null, address: p.address || null,
       transport_license: p.transport_license || null, description: p.description || null, support_whatsapp: p.support_whatsapp || null,
       logo_url: p.logo_url || null,
     };
@@ -31,10 +32,16 @@ export default function SettingsPage() {
         <Card className="space-y-4">
           <div className="flex items-center gap-2"><h2 className="font-extrabold">Business</h2><Badge tone={p.status === 'active' ? 'green' : 'amber'}>{p.status === 'active' ? 'verified' : p.status}</Badge></div>
           <Field label="Company name"><Input disabled={!m} value={p.name ?? ''} onChange={(e) => setP({ ...p, name: e.target.value })} /></Field>
+          <Field label="Legal name (as on the RCCM)"><Input disabled={!m} value={p.legal_name ?? ''} onChange={(e) => setP({ ...p, legal_name: e.target.value })} /></Field>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="RCCM"><Input disabled={!m} value={p.transport_license ?? ''} onChange={(e) => setP({ ...p, transport_license: e.target.value })} /></Field>
+            <Field label="RCCM"><Input disabled={!m} value={p.registration_number ?? ''} onChange={(e) => setP({ ...p, registration_number: e.target.value })} /></Field>
             <Field label="NIU (tax id)"><Input disabled={!m} value={p.tax_id ?? ''} onChange={(e) => setP({ ...p, tax_id: e.target.value })} /></Field>
           </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Transport licence no."><Input disabled={!m} value={p.transport_license ?? ''} onChange={(e) => setP({ ...p, transport_license: e.target.value })} /></Field>
+            <Field label="City"><Input disabled={!m} value={p.city ?? ''} onChange={(e) => setP({ ...p, city: e.target.value })} /></Field>
+          </div>
+          <Field label="Address"><Input disabled={!m} value={p.address ?? ''} onChange={(e) => setP({ ...p, address: e.target.value })} /></Field>
           <Field label="Contact email"><Input type="email" disabled={!m} value={p.contact_email ?? ''} onChange={(e) => setP({ ...p, contact_email: e.target.value })} /></Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label="Phone"><Input disabled={!m} value={p.contact_phone ?? ''} onChange={(e) => setP({ ...p, contact_phone: e.target.value })} /></Field>

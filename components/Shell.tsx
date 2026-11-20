@@ -4,8 +4,9 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-  Building2, Code2, DollarSign, LayoutDashboard, LifeBuoy, LogOut, Map, Menu, Package, Truck, Users, UserCog, X, Bike, ChevronsUpDown,
+  Building2, Code2, DollarSign, LayoutDashboard, LifeBuoy, LogOut, Map, Menu, Package, Truck, Users, UserCog, X, Bike, ChevronsUpDown, BadgeCheck,
 } from 'lucide-react';
+import ApplyForm from './ApplyForm';
 import { PUBLIC_PREFIXES, useSession } from '@/lib/session';
 import { ROLE_LABEL } from '@/lib/format';
 import { Button, Card, Spinner, Toaster } from './ui';
@@ -41,7 +42,10 @@ function Sidebar() {
   const [picker, setPicker] = useState(false);
   useEffect(() => setOpen(false), [pathname]);
   const isRider = me?.active_carrier.role === 'rider';
-  const items = isRider ? [{ name: 'My deliveries', href: '/ride', icon: Bike, perm: null }, NAV[NAV.length - 1]!] : NAV.filter((n) => !n.perm || can(n.perm));
+  const onboarding = !!me && !['active', 'suspended', 'revoked'].includes(me.active_carrier.status);
+  const items = isRider
+    ? [{ name: 'My deliveries', href: '/ride', icon: Bike, perm: null }, NAV[NAV.length - 1]!]
+    : [...(onboarding ? [{ name: 'Get verified', href: '/onboarding', icon: BadgeCheck, perm: null }] : []), ...NAV.filter((n) => !n.perm || can(n.perm))];
 
   const nav = (
     <nav className="flex flex-col h-full">
@@ -73,7 +77,7 @@ function Sidebar() {
               className="w-full text-left text-sm px-3 py-2 rounded-lg text-mute hover:text-ink hover:bg-p2">{m.name} <span className="text-xs">· {ROLE_LABEL[m.role]}</span></button>
           ))}
           {me.active_carrier.status !== 'active' && (
-            <p className="text-xs text-amber-300 px-1">Status: {me.active_carrier.status}. {me.active_carrier.status === 'pending' ? 'Mambanda is verifying your company; you can set up meanwhile.' : ''}</p>
+            <p className="text-xs text-amber-300 px-1">Status: {me.active_carrier.status}. {me.active_carrier.status === 'pending' ? 'Mambanda is verifying your company; you can keep setting up.' : me.active_carrier.status === 'applied' ? 'Finish the checklist and submit it to go live.' : me.active_carrier.status === 'rejected' ? 'Mambanda asked for changes — see Get verified.' : ''}</p>
           )}
           <button onClick={signOut} className="w-full flex items-center gap-2 text-sm text-mute hover:text-ink px-3 py-2 rounded-lg"><LogOut className="w-4 h-4" />Sign out</button>
         </div>
@@ -105,8 +109,11 @@ function Gate({ children }: { children: React.ReactNode }) {
   const { status, choices, switchCarrier, signOut, error, me } = useSession();
   const router = useRouter();
   const pathname = usePathname();
+  const [applying, setApplying] = useState(false);
   useEffect(() => {
     if (status === 'ready' && me?.active_carrier.role === 'rider' && pathname !== '/ride' && pathname !== '/support') router.replace('/ride');
+    // A company still being verified has no jobs to show: land on its checklist.
+    else if (status === 'ready' && pathname === '/' && me && ['applied', 'pending', 'rejected'].includes(me.active_carrier.status)) router.replace('/onboarding');
   }, [status, me, pathname, router]);
   if (status === 'loading' || status === 'signed_out') return <Spinner label="Opening your portal…" />;
   if (status === 'choose') {
@@ -119,11 +126,24 @@ function Gate({ children }: { children: React.ReactNode }) {
     );
   }
   if (status === 'no_carrier') {
+    if (applying) {
+      return (
+        <Card className="max-w-3xl mx-auto mt-10">
+          <h2 className="text-xl font-extrabold mb-1">Become a Mambanda delivery partner</h2>
+          <p className="text-sm text-mute mb-6">Tell us about your company. You can set up hubs, prices and riders right after; jobs start once Mambanda has verified you.</p>
+          <ApplyForm onCancel={() => setApplying(false)} />
+        </Card>
+      );
+    }
     return (
       <Card className="max-w-md mx-auto mt-16 text-center">
         <h2 className="text-lg font-extrabold mb-2">No delivery company on this account</h2>
-        <p className="text-sm text-mute mb-6">Ask your company to invite you from the portal (Team or Fleet), then open the link they send. Delivery companies that want to join Mambanda can write to delivery@mambandamarket.com.</p>
-        <div className="flex gap-2 justify-center"><Button onClick={() => router.push('/invite')}>I have an invite code</Button><Button variant="ghost" onClick={signOut}>Sign out</Button></div>
+        <p className="text-sm text-mute mb-6">Riders and staff: ask your company to invite you (Team or Fleet), then open the link they send. Delivery companies: register yours and get verified.</p>
+        <div className="flex flex-wrap gap-2 justify-center">
+          <Button onClick={() => setApplying(true)}>Register my delivery company</Button>
+          <Button variant="ghost" onClick={() => router.push('/invite')}>I have an invite code</Button>
+          <Button variant="ghost" onClick={signOut}>Sign out</Button>
+        </div>
       </Card>
     );
   }
