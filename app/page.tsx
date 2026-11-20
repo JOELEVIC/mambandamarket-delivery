@@ -1,135 +1,80 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { Truck, Package, Users, DollarSign, CheckCircle2, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import { useApi, useSession } from '@/lib/session';
+import { when, xaf } from '@/lib/format';
+import { Card, Empty, ErrorNote, PageHeader, Spinner, StageBadge, Stat } from '@/components/ui';
+import JobDrawer from '@/components/JobDrawer';
 
 export default function ControlTower() {
-  const stats = [
-    { name: 'Active Shipments', value: '1,428', change: '+12.3%', icon: Package, tooltip: 'Total shipments in progress across all carriers' },
-    { name: 'Active Carriers', value: '6 Partners', change: 'Ola Trans + 5', icon: Truck, tooltip: 'Verified multi-tenant logistics partners' },
-    { name: 'Delivery SLA', value: '94.6%', change: '+1.4%', icon: CheckCircle2, tooltip: 'On-time delivery percentage within SLA' },
-    { name: 'COD Remitted', value: '1.85M XAF', change: '98% Reconciled', icon: DollarSign, tooltip: 'Cash-on-delivery collected & remitted today' },
-  ];
+  const { me, can } = useSession();
+  const inbox = useApi<{ items: any[]; total: number }>('/carrier/inbox?limit=10');
+  const jobs = useApi<{ items: any[]; total: number }>('/carrier/jobs?scope=open&limit=12');
+  const riders = useApi<{ items: any[] }>(can('riders.view') ? '/carrier/riders' : null);
+  const money = useApi<any>(can('finance.view') ? '/carrier/finance/summary' : null);
+  const score = useApi<any>('/carrier/scorecards');
+  const [open, setOpen] = useState<string | null>(null);
+  const refresh = () => { void inbox.reload(); void jobs.reload(); void riders.reload(); void money.reload(); };
 
-  const recentJobs = [
-    { id: 'SHP-9021', client: 'Mambanda Store #4', carrier: 'Ola Trans Ltd', destination: 'Akwa, Douala', status: 'In Transit', cod: '25,000 XAF', eta: '35m' },
-    { id: 'SHP-9022', client: 'Boutique Elegance', carrier: 'House Carrier', destination: 'Bonapriso', status: 'Picked Up', cod: '12,500 XAF', eta: '15m' },
-    { id: 'SHP-9023', client: 'Bamenda Tech Hub', carrier: 'Express Logistics', destination: 'Deido', status: 'Assigned', cod: '45,000 XAF', eta: '1h' },
-    { id: 'SHP-9024', client: 'Kribi Seafood', carrier: 'Ola Trans Ltd', destination: 'Bali', status: 'Delivered', cod: '8,000 XAF', eta: 'Done' },
-  ];
+  const online = (riders.data?.items ?? []).filter((r) => r.is_active && r.availability_status !== 'offline').length;
+  const codTone = money.data?.cod_state === 'ok' ? undefined : money.data?.cod_state === 'due' ? 'amber' : 'red';
 
   return (
-    <div className="space-y-6">
-      {/* Welcome Banner */}
-      <div className="mambanda-card relative overflow-hidden bg-gradient-to-r from-[#11131e] to-[#1a1d2b]">
-        <div className="absolute right-0 top-0 w-80 h-80 bg-[#c9ee0a]/5 rounded-full blur-3xl pointer-events-none"></div>
-        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div>
-            <span className="mambanda-badge inline-block mb-3">Control Tower</span>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#f4f6ef]">
-              Logistics Command Center
-            </h1>
-            <p className="text-[#8b90a3] text-sm mt-1 max-w-2xl">
-              Multi-tenant marketplace layer for Cameroon commerce. Managing quotes, dispatch agents, and escrow reconciliation.
-            </p>
-          </div>
-          <div className="flex items-center space-x-3">
-            <Link href="/client" className="mambanda-btn text-xs sm:text-sm">
-              <span>New Shipment</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-        </div>
+    <div>
+      <PageHeader title={`Good day, ${me?.active_carrier.name}`} subtitle="What needs you now." />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <Stat label="New offers" value={inbox.data?.total ?? '—'} tone={(inbox.data?.total ?? 0) > 0 ? 'lime' : undefined} hint="Answer within 30 minutes" />
+        <Stat label="Jobs in progress" value={jobs.data?.total ?? '—'} />
+        <Stat label="Riders on duty" value={riders.data ? `${online}/${riders.data.items.filter((r) => r.is_active).length}` : '—'} />
+        {money.data
+          ? <Stat label={money.data.balance_cents >= 0 ? 'You owe Mambanda' : 'Mambanda owes you'} value={xaf(Math.abs(money.data.balance_cents))} tone={codTone as any}
+              hint={money.data.cod_state === 'due' ? 'Remittance due' : money.data.cod_state === 'blocked' ? 'COD jobs blocked — remit now' : money.data.cod_state === 'suspend' ? 'Overdue: account at risk' : 'Up to date'} />
+          : <Stat label="Success rate (30 d)" value={score.data?.success_rate != null ? `${Math.round(score.data.success_rate * 100)}%` : '—'} />}
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        {stats.map((stat, idx) => {
-          const Icon = stat.icon;
-          return (
-            <div key={idx} className="mambanda-card flex items-center justify-between group relative">
-              <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-[#8b90a3]">{stat.name}</span>
-                <div className="text-xl xl:text-2xl font-extrabold text-[#f4f6ef] mt-1">{stat.value}</div>
-                <div className="text-xs font-semibold text-[#c9ee0a] mt-1">{stat.change}</div>
-              </div>
-              <div className="w-12 h-12 rounded-2xl bg-[#1a1d2b] border border-[#252839] text-[#c9ee0a] flex items-center justify-center group-hover:scale-105 transition-transform flex-shrink-0">
-                <Icon className="w-6 h-6" />
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Quick Access Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <Link href="/client" className="mambanda-card hover:border-[#c9ee0a] group">
-          <div className="w-10 h-10 rounded-xl bg-[#1a1d2b] border border-[#252839] text-[#c9ee0a] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-            <Package className="w-5 h-5" />
+      <div className="grid lg:grid-cols-2 gap-6">
+        <Card>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-extrabold">Offers waiting</h2>
+            <Link href="/jobs" className="text-sm text-lime font-semibold flex items-center gap-1">All jobs <ArrowRight className="w-4 h-4" /></Link>
           </div>
-          <h3 className="text-base font-bold text-[#f4f6ef]">Client Orders</h3>
-          <p className="text-[#8b90a3] text-xs mt-1">Multi-carrier quotes & vendor fulfillment.</p>
-        </Link>
-        <Link href="/carrier" className="mambanda-card hover:border-[#c9ee0a] group">
-          <div className="w-10 h-10 rounded-xl bg-[#1a1d2b] border border-[#252839] text-[#c9ee0a] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-            <Truck className="w-5 h-5" />
-          </div>
-          <h3 className="text-base font-bold text-[#f4f6ef]">Carrier Portal</h3>
-          <p className="text-[#8b90a3] text-xs mt-1">Ola Trans inbox, rate cards & coverage.</p>
-        </Link>
-        <Link href="/finance" className="mambanda-card hover:border-[#c9ee0a] group">
-          <div className="w-10 h-10 rounded-xl bg-[#1a1d2b] border border-[#252839] text-[#c9ee0a] flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-            <DollarSign className="w-5 h-5" />
-          </div>
-          <h3 className="text-base font-bold text-[#f4f6ef]">Reconciliation</h3>
-          <p className="text-[#8b90a3] text-xs mt-1">COD ledger & weekly escrow settlements.</p>
-        </Link>
-      </div>
-
-      {/* Live Shipments Table */}
-      <div className="mambanda-card overflow-hidden">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h3 className="text-base font-bold text-[#f4f6ef]">Recent Shipments</h3>
-            <p className="text-xs text-[#8b90a3]">Live telemetry across partner 3PLs</p>
-          </div>
-          <Link href="/client" className="text-xs font-bold text-[#c9ee0a] hover:underline">
-            View All →
-          </Link>
-        </div>
-
-        <div className="overflow-x-auto -mx-6 px-6 sm:mx-0 sm:px-0">
-          <table className="w-full text-left text-xs whitespace-nowrap sm:whitespace-normal">
-            <thead className="bg-[#07080f] text-[#8b90a3] uppercase tracking-wider border-b border-[#252839]">
-              <tr>
-                <th className="py-3 px-3">Tracking ID</th>
-                <th className="py-3 px-3">Store</th>
-                <th className="py-3 px-3">Carrier</th>
-                <th className="py-3 px-3">Destination</th>
-                <th className="py-3 px-3">COD</th>
-                <th className="py-3 px-3">ETA</th>
-                <th className="py-3 px-3">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#252839] text-[#f4f6ef]">
-              {recentJobs.map((job) => (
-                <tr key={job.id} className="hover:bg-[#1a1d2b]/50 transition-colors">
-                  <td className="py-3 px-3 font-mono text-[#c9ee0a] font-semibold">{job.id}</td>
-                  <td className="py-3 px-3 font-medium">{job.client}</td>
-                  <td className="py-3 px-3 text-[#8b90a3]">{job.carrier}</td>
-                  <td className="py-3 px-3 text-[#8b90a3]">{job.destination}</td>
-                  <td className="py-3 px-3 font-mono">{job.cod}</td>
-                  <td className="py-3 px-3 text-[#8b90a3]">{job.eta}</td>
-                  <td className="py-3 px-3">
-                    <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#1a1d2b] border border-[#252839] text-[#c9ee0a]">
-                      {job.status}
-                    </span>
-                  </td>
-                </tr>
+          <ErrorNote error={inbox.error} onRetry={inbox.reload} />
+          {inbox.loading && !inbox.data ? <Spinner /> : (inbox.data?.items.length ?? 0) === 0 ? <Empty title="No offers right now">New jobs from Mambanda appear here.</Empty> : (
+            <ul className="divide-y divide-line">
+              {inbox.data!.items.map((o) => (
+                <li key={o.id}><button onClick={() => setOpen(o.shipping_request_id)} className="w-full text-left py-3 flex items-center gap-3 hover:bg-p2/50 rounded-xl px-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm">{o.job?.reference} · {o.job?.from_location} → {o.job?.to_location}</p>
+                    <p className="text-xs text-mute">{o.job?.item_title} · collect {xaf(o.job?.amount_to_collect_cents)} · expires {when(o.expires_at).replace(' ago', '')}</p>
+                  </div>
+                  <span className="font-extrabold text-lime text-sm">{xaf(o.job?.quoted_total_cents)}</span>
+                </button></li>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </ul>
+          )}
+        </Card>
+
+        <Card>
+          <h2 className="font-extrabold mb-4">On the road</h2>
+          <ErrorNote error={jobs.error} onRetry={jobs.reload} />
+          {jobs.loading && !jobs.data ? <Spinner /> : (jobs.data?.items.length ?? 0) === 0 ? <Empty title="Nothing in progress" /> : (
+            <ul className="divide-y divide-line">
+              {jobs.data!.items.filter((j) => j.stage !== 'offered').map((j) => (
+                <li key={j.id}><button onClick={() => setOpen(j.id)} className="w-full text-left py-3 flex items-center gap-3 hover:bg-p2/50 rounded-xl px-2">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm">{j.reference} · {j.to_location}</p>
+                    <p className="text-xs text-mute">{j.contact_name ?? 'Buyer'} · {when(j.updated_at)}</p>
+                  </div>
+                  <StageBadge stage={j.stage} />
+                </button></li>
+              ))}
+            </ul>
+          )}
+        </Card>
       </div>
+      <JobDrawer id={open} onClose={() => setOpen(null)} onChanged={refresh} />
     </div>
   );
 }

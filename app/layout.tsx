@@ -1,39 +1,23 @@
-import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
-import "./globals.css";
-import Sidebar from "@/components/Sidebar";
-import { AppProvider } from "@/lib/AppContext";
+import type { Metadata } from 'next';
+import { Poppins } from 'next/font/google';
+import './globals.css';
+import Shell from '@/components/Shell';
+import { SessionProvider } from '@/lib/session';
 
-const poppins = Poppins({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-poppins",
-});
+const poppins = Poppins({ subsets: ['latin'], weight: ['400', '500', '600', '700', '800'], variable: '--font-poppins' });
 
 export const metadata: Metadata = {
-  title: "Mambanda Market Delivery & Carrier Management Platform",
-  description: "Manage delivery clients, multi-carrier quotes, delivery agents, and reconciliation.",
+  title: 'Mambanda Delivery — Carrier portal',
+  description: 'Jobs, riders, tariffs and money for delivery companies working with Mambanda Market.',
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${poppins.variable} h-full antialiased`}>
-      <body className="min-h-full flex bg-[#07080f] text-[#f4f6ef] font-sans overflow-x-hidden">
-        <AppProvider>
-          <Sidebar />
-          <div className="flex-1 flex flex-col min-w-0 lg:pl-64">
-            <main className="flex-1 w-full px-4 sm:px-6 lg:px-10 py-8">
-              {children}
-            </main>
-            <footer className="border-t border-[#252839] text-xs text-[#8b90a3] py-4 px-6 text-center lg:text-left bg-[#11131e]/50">
-              Mambanda Market Delivery & Carrier Platform • Integrated with Carrier-Platform & Core API Reconciliation v1.0
-            </footer>
-          </div>
-        </AppProvider>
+    <html lang="en" className={`${poppins.variable} h-full`}>
+      <body className="min-h-full flex flex-col lg:flex-row bg-bg text-ink font-sans overflow-x-hidden">
+        <SessionProvider>
+          <Shell>{children}</Shell>
+        </SessionProvider>
       </body>
     </html>
   );
