@@ -67,7 +67,12 @@ function Sidebar() {
         <div className="p-3 border-t border-line space-y-2">
           <button onClick={() => setPicker((v) => !v)} disabled={me.memberships.length < 2}
             className="w-full text-left flex items-center gap-3 p-3 rounded-xl bg-p2 border border-line hover:border-lime/50 disabled:hover:border-line">
-            <div className="w-9 h-9 rounded-lg bg-p1 border border-line flex items-center justify-center font-extrabold text-lime">{me.active_carrier.name.slice(0, 1)}</div>
+            {(() => {
+              const logo = me.memberships.find((x) => x.carrier_id === me.active_carrier.carrier_id)?.logo_url;
+              // eslint-disable-next-line @next/next/no-img-element -- company logo from storage
+              return logo ? <img src={logo} alt="" className="w-9 h-9 rounded-lg object-cover border border-line" />
+                : <div className="w-9 h-9 rounded-lg bg-p1 border border-line flex items-center justify-center font-extrabold text-lime">{me.active_carrier.name.slice(0, 1)}</div>;
+            })()}
             <div className="min-w-0 flex-1">
               <p className="text-sm font-bold truncate">{me.active_carrier.name}</p>
               <p className="text-xs text-mute truncate">{ROLE_LABEL[me.active_carrier.role] ?? me.active_carrier.role} · {me.user.email}</p>

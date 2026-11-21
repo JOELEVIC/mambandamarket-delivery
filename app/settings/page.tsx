@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { get, patch } from '@/lib/api';
 import { useSession } from '@/lib/session';
+import LogoUpload from '@/components/LogoUpload';
 import { Badge, Button, Card, Field, Input, PageHeader, Select, Spinner, Textarea, useAction } from '@/components/ui';
 
 export default function SettingsPage() {
@@ -19,7 +20,6 @@ export default function SettingsPage() {
       name: p.name, contact_email: p.contact_email || undefined, contact_phone: p.contact_phone || undefined, tax_id: p.tax_id || null,
       legal_name: p.legal_name || null, registration_number: p.registration_number || null, city: p.city || null, address: p.address || null,
       transport_license: p.transport_license || null, description: p.description || null, support_whatsapp: p.support_whatsapp || null,
-      logo_url: p.logo_url || null,
     };
     if (owner) { body.settlement_channel = p.settlement_channel; body.settlement_details = p.settlement_details ?? {}; }
     if (await run('s', () => patch('/carrier/profile', body), 'Saved')) void reload();
@@ -47,7 +47,8 @@ export default function SettingsPage() {
             <Field label="Phone"><Input disabled={!m} value={p.contact_phone ?? ''} onChange={(e) => setP({ ...p, contact_phone: e.target.value })} /></Field>
             <Field label="Support WhatsApp"><Input disabled={!m} value={p.support_whatsapp ?? ''} onChange={(e) => setP({ ...p, support_whatsapp: e.target.value })} /></Field>
           </div>
-          <Field label="Logo URL"><Input disabled={!m} value={p.logo_url ?? ''} onChange={(e) => setP({ ...p, logo_url: e.target.value })} /></Field>
+          <Field label="Logo" hint="Shown to buyers next to your price, and to your riders in the app."><LogoUpload kind="logo" url={p.logo_url ?? null} name={p.name ?? ''} disabled={!m} onChange={(np) => { setP({ ...p, logo_url: np.logo_url, banner_url: np.banner_url }); void reload(); }} /></Field>
+          <Field label="Banner (optional)"><LogoUpload kind="banner" url={p.banner_url ?? null} name={p.name ?? ''} disabled={!m} onChange={(np) => setP({ ...p, logo_url: np.logo_url, banner_url: np.banner_url })} /></Field>
           <Field label="About"><Textarea rows={3} disabled={!m} value={p.description ?? ''} onChange={(e) => setP({ ...p, description: e.target.value })} /></Field>
         </Card>
         <Card className="space-y-4">
