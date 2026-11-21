@@ -6,6 +6,7 @@ import { del, get, patch, post } from '@/lib/api';
 import { useApi, useSession } from '@/lib/session';
 import { day } from '@/lib/format';
 import { Badge, Button, Card, Empty, ErrorNote, Field, Input, Modal, PageHeader, Select, Spinner, Table, Tabs, Textarea, useAction } from '@/components/ui';
+import { PageTip } from '@/components/Guide';
 
 type Tab = 'tariffs' | 'hubs' | 'coverage' | 'policies';
 type Lane = { from: string; to: string; band?: string; tier?: string; price_cents: number; restricted?: boolean };
@@ -220,6 +221,7 @@ export default function SetupPage() {
   return (
     <div>
       <PageHeader title="Coverage & tariffs" subtitle="Where you deliver, what it costs, and how you work." />
+      <PageTip id="setup" title="Buyers only see you where a published tariff covers the route" href="/guide">Add a hub and your zones, then publish a rate card (or import your tariff as CSV). Drafts are never shown to buyers.</PageTip>
       <Tabs value={tab} onChange={setTab} tabs={[{ id: 'tariffs', label: 'Tariffs' }, { id: 'hubs', label: 'Hubs' }, { id: 'coverage', label: 'Zones' }, { id: 'policies', label: 'Policies' }]} />
       {tab === 'tariffs' && <Tariffs />}{tab === 'hubs' && <Hubs />}{tab === 'coverage' && <Coverage />}{tab === 'policies' && <Policies />}
     </div>

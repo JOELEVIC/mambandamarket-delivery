@@ -5,6 +5,7 @@ import { Search } from 'lucide-react';
 import { useApi } from '@/lib/session';
 import { when, xaf } from '@/lib/format';
 import { Card, Empty, ErrorNote, Input, PageHeader, Spinner, StageBadge, Table, Tabs } from '@/components/ui';
+import { PageTip } from '@/components/Guide';
 import JobDrawer from '@/components/JobDrawer';
 
 type Tab = 'offers' | 'open' | 'done' | 'test';
@@ -24,6 +25,7 @@ export default function JobsPage() {
   return (
     <div>
       <PageHeader title="Jobs" subtitle="Offers from Mambanda, jobs in progress and the history." />
+      <PageTip id="jobs" title="Accept offers before the countdown ends" href="/guide">A buyer who picks you creates an offer. Accept it in time, then assign a rider — the buyer sees the parcel live, and the rider confirms delivery with the buyer’s 6-digit code.</PageTip>
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
         <Tabs value={tab} onChange={setTab} tabs={[{ id: 'offers', label: 'Offers', count: inbox.data?.total }, { id: 'open', label: 'In progress' }, { id: 'done', label: 'Finished' }, { id: 'test', label: 'Sandbox' }]} />
         {tab !== 'offers' && (

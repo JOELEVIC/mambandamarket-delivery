@@ -4,8 +4,9 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-  Building2, Code2, DollarSign, LayoutDashboard, LifeBuoy, LogOut, Map, Menu, Package, Truck, Users, UserCog, X, Bike, ChevronsUpDown, BadgeCheck,
+  Building2, Code2, DollarSign, LayoutDashboard, LifeBuoy, LogOut, Map, Menu, Package, Truck, Users, UserCog, X, Bike, ChevronsUpDown, BadgeCheck, BookOpen,
 } from 'lucide-react';
+import { WelcomeTour } from './Guide';
 import ApplyForm from './ApplyForm';
 import { PUBLIC_PREFIXES, useSession } from '@/lib/session';
 import { ROLE_LABEL } from '@/lib/format';
@@ -20,6 +21,7 @@ const NAV = [
   { name: 'Team', href: '/team', icon: UserCog, perm: 'team.view' },
   { name: 'Developers', href: '/developers', icon: Code2, perm: 'developers.manage' },
   { name: 'Company', href: '/settings', icon: Building2, perm: 'profile.view' },
+  { name: 'Guide', href: '/guide', icon: BookOpen, perm: null },
   { name: 'Support', href: '/support', icon: LifeBuoy, perm: null },
 ];
 
@@ -147,7 +149,7 @@ function Gate({ children }: { children: React.ReactNode }) {
       </Card>
     );
   }
-  return <>{error && <p className="text-sm text-rose-300 mb-4">{error}</p>}{children}</>;
+  return <>{error && <p className="text-sm text-rose-300 mb-4">{error}</p>}<WelcomeTour />{children}</>;
 }
 
 export default function Shell({ children }: { children: React.ReactNode }) {

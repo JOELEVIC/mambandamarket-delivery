@@ -6,9 +6,13 @@ import { del, patch, post } from '@/lib/api';
 import { useApi, useSession } from '@/lib/session';
 import { when, xaf } from '@/lib/format';
 import { Badge, Button, Card, Empty, ErrorNote, Field, Input, Modal, PageHeader, Select, Spinner, Table, useAction } from '@/components/ui';
+import { PageTip } from '@/components/Guide';
 import InviteResult, { type InviteRes } from '@/components/InviteResult';
 
 const AVAIL_TONE: Record<string, string> = { available: 'green', busy: 'blue', break: 'amber', offline: 'mute' };
+
+const VEHICLE_LABEL: Record<string, string> = { bike: 'Motorbike / bicycle', car: 'Car', van: 'Van', truck: 'Truck', foot: 'On foot' };
+const VEHICLE_OPTIONS = Object.entries(VEHICLE_LABEL).map(([v, l]) => <option key={v} value={v}>{l}</option>);
 
 export default function FleetPage() {
   const { can } = useSession();
@@ -17,14 +21,14 @@ export default function FleetPage() {
   const [adding, setAdding] = useState(false);
   const [editing, setEditing] = useState<any | null>(null);
   const [invite, setInvite] = useState<InviteRes | null>(null);
-  const [form, setForm] = useState({ name: '', phone: '', vehicle_type: 'bike', license_plate: '', max_cod_float_cents: 100000 });
+  const [form, setForm] = useState({ name: '', phone: '', email: '', vehicle_type: 'bike', license_plate: '', max_cod_float_cents: 100000 });
   const { busy, run } = useAction();
   const manage = can('riders.manage');
 
   const add = async (e: React.FormEvent) => {
     e.preventDefault();
-    const r = await run('add', () => post<{ item: any; invite: InviteRes }>('/carrier/riders', { ...form, license_plate: form.license_plate || null, invite: true }), 'Rider added');
-    if (r) { setAdding(false); setInvite(r.invite); setForm({ name: '', phone: '', vehicle_type: 'bike', license_plate: '', max_cod_float_cents: 100000 }); void riders.reload(); void invites.reload(); }
+    const r = await run('add', () => post<{ item: any; invite: InviteRes }>('/carrier/riders', { ...form, email: form.email.trim() || undefined, license_plate: form.license_plate || null, invite: true }), form.email.trim() ? 'Rider added — invite emailed' : 'Rider added');
+    if (r) { setAdding(false); setInvite(r.invite); setForm({ name: '', phone: '', email: '', vehicle_type: 'bike', license_plate: '', max_cod_float_cents: 100000 }); void riders.reload(); void invites.reload(); }
   };
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,6 +45,7 @@ export default function FleetPage() {
     <div>
       <PageHeader title="Fleet & riders" subtitle="Who rides for you, where they are, and how much cash they carry."
         actions={manage && <Button onClick={() => setAdding(true)}><Plus className="w-4 h-4" />Add rider</Button>} />
+      <PageTip id="fleet" title="Riders join with an invite code" href="/guide">Add a rider with their phone number and share the code by WhatsApp (or email). In the Mambanda Delivery app they tap “I have an invite code” and are linked to you automatically.</PageTip>
       <Card>
         <ErrorNote error={riders.error} onRetry={riders.reload} />
         {riders.loading && !riders.data ? <Spinner /> : (riders.data?.items.length ?? 0) === 0 ? (
@@ -49,7 +54,7 @@ export default function FleetPage() {
           <Table head={['Rider', 'Status', 'Jobs', 'Cash held', 'Last seen', 'Account', '']}>
             {riders.data!.items.map((r) => (
               <tr key={r.id} className={r.is_active ? '' : 'opacity-50'}>
-                <td className="py-3 pr-4"><p className="font-bold">{r.name}</p><p className="text-xs text-mute">{r.phone} · {r.vehicle_type}{r.license_plate ? ` · ${r.license_plate}` : ''}</p></td>
+                <td className="py-3 pr-4"><p className="font-bold">{r.name}</p><p className="text-xs text-mute">{r.phone} · {VEHICLE_LABEL[r.vehicle_type] ?? r.vehicle_type}{r.license_plate ? ` · ${r.license_plate}` : ''}</p></td>
                 <td className="py-3 pr-4"><Badge tone={AVAIL_TONE[r.availability_status] ?? 'mute'}>{r.is_active ? r.availability_status : 'inactive'}</Badge></td>
                 <td className="py-3 pr-4">{r.active_jobs}</td>
                 <td className="py-3 pr-4 whitespace-nowrap"><span className={r.cash_on_hand_cents > r.max_cod_float_cents * 0.8 ? 'text-amber-300 font-bold' : ''}>{xaf(r.cash_on_hand_cents)}</span><span className="text-xs text-mute"> / {xaf(r.max_cod_float_cents)}</span></td>
@@ -79,8 +84,9 @@ export default function FleetPage() {
         <form onSubmit={add} className="space-y-4">
           <Field label="Full name"><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required /></Field>
           <Field label="Phone (they sign in with it)"><Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="677 12 34 56" required /></Field>
+          <Field label="Email (optional)" hint="We email them the invite too. You can always share it by WhatsApp."><Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} /></Field>
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Vehicle"><Select value={form.vehicle_type} onChange={(e) => setForm({ ...form, vehicle_type: e.target.value })}>{['bike', 'car', 'van', 'truck', 'foot'].map((v) => <option key={v}>{v}</option>)}</Select></Field>
+            <Field label="Vehicle"><Select value={form.vehicle_type} onChange={(e) => setForm({ ...form, vehicle_type: e.target.value })}>{VEHICLE_OPTIONS}</Select></Field>
             <Field label="Plate"><Input value={form.license_plate} onChange={(e) => setForm({ ...form, license_plate: e.target.value })} /></Field>
           </div>
           <Field label="Cash limit (FCFA)" hint="New cash-on-delivery jobs are refused once the rider holds this much."><Input type="number" min={0} step={5000} value={form.max_cod_float_cents} onChange={(e) => setForm({ ...form, max_cod_float_cents: Number(e.target.value) })} /></Field>
@@ -94,7 +100,7 @@ export default function FleetPage() {
             <Field label="Name"><Input value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })} /></Field>
             <Field label="Phone"><Input value={editing.phone} onChange={(e) => setEditing({ ...editing, phone: e.target.value })} /></Field>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Vehicle"><Select value={editing.vehicle_type} onChange={(e) => setEditing({ ...editing, vehicle_type: e.target.value })}>{['bike', 'car', 'van', 'truck', 'foot'].map((v) => <option key={v}>{v}</option>)}</Select></Field>
+              <Field label="Vehicle"><Select value={editing.vehicle_type} onChange={(e) => setEditing({ ...editing, vehicle_type: e.target.value })}>{VEHICLE_OPTIONS}</Select></Field>
               <Field label="Plate"><Input value={editing.license_plate ?? ''} onChange={(e) => setEditing({ ...editing, license_plate: e.target.value })} /></Field>
             </div>
             <Field label="Cash limit (FCFA)"><Input type="number" value={editing.max_cod_float_cents} onChange={(e) => setEditing({ ...editing, max_cod_float_cents: e.target.value })} /></Field>

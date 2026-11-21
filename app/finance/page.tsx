@@ -6,6 +6,7 @@ import { get, post } from '@/lib/api';
 import { useApi, useSession } from '@/lib/session';
 import { day, ENTRY_LABEL, when, xaf } from '@/lib/format';
 import { Badge, Button, Card, Empty, ErrorNote, Field, Input, Modal, PageHeader, Select, Spinner, Stat, Table, Tabs, Textarea, useAction } from '@/components/ui';
+import { PageTip } from '@/components/Guide';
 
 type Tab = 'ledger' | 'remittances' | 'statements';
 const METHOD: Record<string, string> = { cash: 'Cash', mtn_momo: 'MTN MoMo', orange_money: 'Orange Money', bank: 'Bank' };
@@ -69,6 +70,7 @@ export default function FinancePage() {
           {can('finance.manage') && <Button variant="ghost" onClick={() => setDeclare({ kind: 'carrier_remit', amount: Math.max(0, s?.balance_cents ?? 0), method: 'mtn_momo', reference: '' })}>Declare a transfer</Button>}
           {can('finance.manage') && <Button onClick={() => setMomo({ amount: Math.max(0, s?.balance_cents ?? 0), msisdn: '' })}>Pay by MoMo</Button>}
         </>} />
+      <PageTip id="money" title="Remit cash within 48 hours" href="/guide">Cash your riders collect belongs to Mambanda until you remit it. Pay by MoMo confirms by itself; a declared transfer is confirmed by Mambanda. After 5 days unpaid, cash-on-delivery jobs pause.</PageTip>
 
       <ErrorNote error={sum.error} onRetry={sum.reload} />
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
